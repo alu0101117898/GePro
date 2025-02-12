@@ -1,0 +1,38 @@
+    val taskData = remember { mutableStateOf<Result<String, NetworkError>>(Result.Loading) }
+    val jsonData = remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        taskData.value = client.getClickUpTask("8696pjad1")
+    }
+
+    when (val result = taskData.value) {
+        is Result.Loading -> CircularProgressIndicator()
+        is Result.Success -> {
+            val json = Json { ignoreUnknownKeys = true }
+            val task = json.decodeFromString<TaskData>(result.data)
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Name: ${task.name}",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                if (task.description != null) {
+                    Text(
+                        text = "Description: ${task.description}",
+                        fontSize = 16.sp,
+                        color = Color.DarkGray
+                    )
+                }
+                if (task.creator != null) {
+                    Text(
+                        text = "Username: ${task.creator.username}",
+                        fontSize = 16.sp,
+                        color = Color.DarkGray
+                    )
+                }
+            }
+        }
+        is Result.Error -> Text(text = "Error: ${result.error}")
+    }
+    Text(text = jsonData.value)

@@ -4,7 +4,6 @@ import androidx.compose.ui.window.application
 import io.ktor.client.engine.okhttp.OkHttp
 import networking.ClickUpClient
 import networking.createHttpClient
-import ui.App
 
 fun main() = application {
     Window(

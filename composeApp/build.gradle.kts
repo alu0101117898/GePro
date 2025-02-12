@@ -7,17 +7,14 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
-    alias(libs.plugins.compose.compiler)
+    //alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
 
     androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
+
     }
 
     jvm("desktop")
@@ -45,7 +42,6 @@ kotlin {
 
                 //Ktor y Logback
                 implementation(libs.bundles.ktor)
-                implementation("io.ktor:ktor-client-cio:2.2.3")
                 implementation("ch.qos.logback:logback-classic:1.2.11")
             }
         }
@@ -119,6 +115,7 @@ android {
 dependencies {
     implementation("androidx.databinding:databinding-compiler:8.7.3")
     implementation("androidx.databinding:databinding-runtime:8.7.3")
+    implementation(libs.androidx.material3.android)
 }
 
 compose.desktop {

@@ -11,4 +11,5 @@ enum class NetworkError : Error {
     SERIALIZATION,
     TOKEN_REVOKED,
     UNKNOWN,
+    CUSTOM
 }
