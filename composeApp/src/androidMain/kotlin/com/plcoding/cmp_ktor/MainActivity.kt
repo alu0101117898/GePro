@@ -14,12 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            App(
-                client = remember {
-                    val httpClient = createHttpClient(OkHttp.create()) // Crea el cliente HTTP
-                    ClickUpClient(httpClient) // Crea ClickUpClient con el cliente HTTP
-                }
-            )
+            App()
         }
     }
 }

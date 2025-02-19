@@ -7,17 +7,26 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
-    //alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
 
     androidTarget {
-
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "11"
+            }
+        }
     }
 
-    jvm("desktop")
+    jvm("desktop") {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "11"
+            }
+        }
+    }
 
     listOf(
         iosX64(),
@@ -40,9 +49,10 @@ kotlin {
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
 
-                //Ktor y Logback
+                // Ktor y Logback
                 implementation(libs.bundles.ktor)
                 implementation("ch.qos.logback:logback-classic:1.2.11")
+                implementation(libs.ktor.ktor.client.cio)
             }
         }
         val androidMain by getting {
@@ -109,12 +119,13 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
-
 }
+
 dependencies {
-    implementation("androidx.databinding:databinding-compiler:8.7.3")
-    implementation("androidx.databinding:databinding-runtime:8.7.3")
+    implementation(libs.androidx.databinding.compiler.v881)
+    implementation(libs.androidx.databinding.runtime)
     implementation(libs.androidx.material3.android)
 }
 

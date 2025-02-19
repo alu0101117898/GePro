@@ -10,6 +10,9 @@ enum class NetworkError : Error {
     SERVER_ERROR,
     SERIALIZATION,
     TOKEN_REVOKED,
+    NOT_FOUND,
     UNKNOWN,
+    BAD_REQUEST,
+    FORBIDDEN,
     CUSTOM
 }
