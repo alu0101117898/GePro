@@ -2,10 +2,11 @@ package controller
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import model.Task
-import model.TaskRepository
+import repository.TaskRepository
 import util.NetworkError
 import util.Result
+import data.TaskData
+import model.Task
 
 class TaskController(private val scope: CoroutineScope) {
 
@@ -16,9 +17,9 @@ class TaskController(private val scope: CoroutineScope) {
         }
     }
 
-    fun createTask(task: Task, onResult: (Result<Task, NetworkError>) -> Unit) {
+    fun createTask(listId: String, taskData: TaskData, onResult: (Result<Task, NetworkError>) -> Unit) {
         scope.launch {
-            val result = TaskRepository.createTask(task)
+            val result = TaskRepository.createTask(listId, taskData)
             onResult(result)
         }
     }

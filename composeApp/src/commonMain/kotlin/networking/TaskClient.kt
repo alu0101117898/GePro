@@ -1,5 +1,6 @@
 package networking
 
+import data.TaskData
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -10,6 +11,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import util.NetworkError
 import util.Result
@@ -39,7 +41,7 @@ class TaskFunction(private val httpClient: HttpClient) {
             Result.Error(NetworkError.UNKNOWN)
         }
     }
-    suspend fun createTask(task: String): Result<String, NetworkError> {
+    suspend fun createTask(listId: String, taskData: TaskData): Result<String, NetworkError> {
         return try {
             val response: HttpResponse = httpClient.post("https://api.clickup.com/api/v2/list/$listId/task") {
                 header(HttpHeaders.Authorization, token)
