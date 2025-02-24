@@ -4,13 +4,12 @@ import data.TaskData
 import networking.TaskFunction
 import networking.createHttpClient
 import io.ktor.client.engine.cio.*
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import model.Task
 import util.NetworkError
 import util.Result
+import util.jsonConfig
 
 object TaskRepository {
     private val client = TaskFunction(createHttpClient(CIO.create()))
@@ -19,10 +18,9 @@ object TaskRepository {
         return when (val result = client.getTask(taskId)) {
             is Result.Success -> {
                 try {
-                    val json = Json.decodeFromString<JsonObject>(result.data)
+                    val json = jsonConfig.decodeFromString<JsonObject>(result.data)
                     val name = json["name"]?.jsonPrimitive?.content ?: "Unknown"
-                    val status = json["status"]?.jsonObject?.get("status")?.jsonPrimitive?.content ?: "Unknown"
-                    Result.Success(Task(id = taskId, name = name, status = status))
+                    Result.Success(Task(id = taskId, name = name))
                 } catch (e: Exception) {
                     Result.Error(NetworkError.SERIALIZATION)
                 }
@@ -36,9 +34,10 @@ object TaskRepository {
         return when (val result = client.createTask(listId, taskData)) {
             is Result.Success -> {
                 try {
-                    val task = Json.decodeFromString<Task>(result.data)
+                    val task = jsonConfig.decodeFromString<Task>(result.data)
                     Result.Success(task)
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     Result.Error(NetworkError.SERIALIZATION)
                 }
             }
@@ -46,12 +45,24 @@ object TaskRepository {
             Result.Loading -> Result.Error(NetworkError.UNKNOWN)
         }
     }
-    /*
-    suspend fun updateTask(task: Task): Result<Task, NetworkError> {
-        // Implementación para actualizar una tarea
+
+    suspend fun updateTask(taskId: String, taskData: TaskData): Result<Task, NetworkError> {
+        return when (val result = client.updateTask(taskId, taskData)) {
+            is Result.Success -> {
+                try {
+                    val task = jsonConfig.decodeFromString<Task>(result.data)
+                    Result.Success(task)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Result.Error(NetworkError.SERIALIZATION)
+                }
+            }
+            is Result.Error -> Result.Error(result.error)
+            else -> Result.Error(NetworkError.UNKNOWN)
+        }
     }
 
     suspend fun deleteTask(taskId: String): Result<Unit, NetworkError> {
-        // Implementación para eliminar una tarea
-    }*/
+        return client.deleteTask(taskId)
+    }
 }

@@ -23,18 +23,18 @@ class TaskController(private val scope: CoroutineScope) {
             onResult(result)
         }
     }
-    /*
-    fun updateTask(task: Task, onResult: (Result<Unit, String>) -> Unit) {
+
+    fun updateTask(taskId: String, taskData: TaskData, onResult: (Result<Task, NetworkError>) -> Unit) {
         scope.launch {
-            val result = TaskRepository.updateTask(task)
+            val result = TaskRepository.updateTask(taskId, taskData)
             onResult(result)
         }
     }
 
-    fun deleteTask(taskId: String, onResult: (Result<Unit, String>) -> Unit) {
+    fun deleteTask(taskId: String, onResult: (Result<Unit, NetworkError>) -> Unit) {
         scope.launch {
             val result = TaskRepository.deleteTask(taskId)
             onResult(result)
         }
-    }*/
+    }
 }

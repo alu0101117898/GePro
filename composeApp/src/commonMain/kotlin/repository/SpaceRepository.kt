@@ -1,6 +1,6 @@
 package repository
 
-import model.Space
+import model.space.Space
 import networking.SpaceClient
 import networking.createHttpClient
 import util.NetworkError

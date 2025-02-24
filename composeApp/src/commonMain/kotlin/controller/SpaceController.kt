@@ -2,7 +2,7 @@ package controller
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import model.Space
+import model.space.Space
 import repository.SpaceRepository
 import util.NetworkError
 import util.Result

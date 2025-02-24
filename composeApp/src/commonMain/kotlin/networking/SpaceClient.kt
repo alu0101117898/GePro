@@ -5,7 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
-import model.Space
+import model.space.Space
 import kotlinx.serialization.Serializable
 import util.NetworkError
 import util.Result

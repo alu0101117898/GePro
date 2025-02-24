@@ -1,0 +1,251 @@
+package screens
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.TextField
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import controller.TaskController
+import model.Task
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import repository.TeamRepository
+import util.Result
+import view.CreateTaskView
+import view.SpacesView
+import view.TaskView
+import view.UpdateTaskView
+
+@Composable
+@Preview
+fun App() {
+    var currentScreen by remember { mutableStateOf("roleSelection") }
+    var userRole by remember { mutableStateOf<String?>(null) }
+    var teamId by remember { mutableStateOf<String?>(null) }
+    val space = rememberCoroutineScope()
+
+    // Obtener teamId mediante el repositorio; esto puede hacerse en un LaunchedEffect.
+    LaunchedEffect(Unit) {
+        val result = TeamRepository.getTeams()
+        if (result is Result.Success && result.data.isNotEmpty()) {
+            teamId = result.data.first().id
+        }
+    }
+
+    when (currentScreen) {
+        "roleSelection" -> {
+            RoleSelectionView { role ->
+                userRole = role
+                if (role == "admin") {
+                    currentScreen = "spaces"
+                } else {
+                    currentScreen = "resourceHome"
+                }
+            }
+        }
+        "spaces" -> {
+            if (teamId == null) {
+                Text("Cargando información del equipo...")
+            } else {
+                // Iniciamos el SpaceController con un scope
+                val spaceController = remember { controller.SpaceController(space) }
+                SpacesView(
+                    spaceController = spaceController,
+                    teamId = teamId!!,
+                    onBack = { currentScreen = "roleSelection" }
+                )
+            }
+        }
+        "resourceHome" -> {
+            Text("Pantalla para recursos aún no implementada.")
+        }
+        // Aquí agregarías otras pantallas según evolucione la aplicación.
+    }
+}
+/*
+@Composable
+@Preview
+fun App() {
+    val coroutineScope = rememberCoroutineScope()
+    val taskController = remember { TaskController(coroutineScope) }
+
+    var currentScreen by remember { mutableStateOf("home") }
+    var taskIdInput by remember { mutableStateOf("") }
+    var task by remember { mutableStateOf<Task?>(null) }
+    var confirmationMessage by remember { mutableStateOf("") } // Añadimos esta variable
+
+    when (currentScreen) {
+        "home" -> {
+            HomeScreen(
+                onViewTask = { currentScreen = "viewTask" },
+                onCreateTask = { currentScreen = "createTask" },
+                taskIdInput = taskIdInput,
+                onTaskIdChange = { taskIdInput = it },
+                confirmationMessage = confirmationMessage // Pasamos el mensaje a HomeScreen
+            )
+            // Limpiamos el mensaje después de mostrarlo
+            LaunchedEffect(Unit) {
+                confirmationMessage = ""
+            }
+        }
+        "viewTask" -> {
+            ViewTaskScreen(
+                taskController = taskController,
+                taskId = taskIdInput,
+                onBack = { currentScreen = "home" },
+                onEdit = { currentScreen = "updateTask" },
+                onTaskLoaded = { loadedTask ->
+                    task = loadedTask // Actualizamos `task` en `App()`
+                },
+                onDelete = {
+                    task = null // Limpiamos la tarea
+                    confirmationMessage = "¡Tarea eliminada exitosamente!" // Establecemos el mensaje de confirmación
+                    currentScreen = "home" // Navegamos a la pantalla inicial
+                }
+            )
+        }
+        "createTask" -> {
+            CreateTaskView(
+                taskController = taskController
+            )
+            Button(onClick = { currentScreen = "home" }) {
+                Text("Volver")
+            }
+        }
+        "updateTask" -> {
+            task?.let { taskToEdit ->
+                UpdateTaskView(
+                    taskController = taskController,
+                    task = taskToEdit,
+                    onBack = { currentScreen = "viewTask" }
+                )
+            } ?: run {
+                Text("No se encontró la tarea para editar.")
+            }
+        }
+    }
+}
+
+@Composable
+fun HomeScreen(
+    onViewTask: () -> Unit,
+    onCreateTask: () -> Unit,
+    taskIdInput: String,
+    onTaskIdChange: (String) -> Unit,
+    confirmationMessage: String
+) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        if (confirmationMessage.isNotEmpty()) {
+            Text(text = confirmationMessage)
+        }
+        TextField(
+            value = taskIdInput,
+            onValueChange = onTaskIdChange,
+            label = { Text("ID de Tarea") }
+        )
+        Button(onClick = onViewTask) {
+            Text("Ver Tarea")
+        }
+        Button(onClick = onCreateTask) {
+            Text("Crear Tarea")
+        }
+    }
+}
+
+@Composable
+fun ViewTaskScreen(
+    taskController: TaskController,
+    taskId: String,
+    onBack: () -> Unit,
+    onEdit: () -> Unit,
+    onTaskLoaded: (Task) -> Unit,
+    onDelete: () -> Unit // Este parámetro ya lo hemos añadido
+) {
+    var task by remember { mutableStateOf<Task?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) } // Para manejar el diálogo de confirmación
+
+    LaunchedEffect(taskId) {
+        taskController.getTask(taskId) { result ->
+            isLoading = false
+            when (result) {
+                is Result.Success -> {
+                    task = result.data
+                    onTaskLoaded(result.data)
+                }
+                is Result.Error -> errorMessage = "Error al cargar la tarea: ${result.error}"
+                Result.Loading -> isLoading = true
+            }
+        }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Confirmar Eliminación") },
+            text = { Text("¿Está seguro de que desea eliminar esta tarea?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDialog = false
+                        taskController.deleteTask(taskId) { result ->
+                            when (result) {
+                                is Result.Success -> {
+                                    onDelete()
+                                }
+                                is Result.Error -> {
+                                    errorMessage = "Error al eliminar la tarea: ${result.error}"
+                                }
+                                else -> {}
+                            }
+                        }
+                    }
+                ) {
+                    Text("Eliminar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDialog = false }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            task?.let {
+                TaskView(task = it)
+                Spacer(modifier = Modifier.padding(top = 8.dp))
+                Button(onClick = onEdit) {
+                    Text("Editar Tarea")
+                }
+                Spacer(modifier = Modifier.padding(top = 8.dp))
+                Button(onClick = {
+                    showDialog = true // Mostrar el diálogo de confirmación
+                }) {
+                    Text("Eliminar Tarea")
+                }
+                if (errorMessage.isNotEmpty()) {
+                    Text(text = errorMessage)
+                }
+            } ?: Text(text = errorMessage)
+        }
+        Spacer(modifier = Modifier.padding(top = 8.dp))
+        Button(onClick = onBack) {
+            Text("Volver")
+        }
+    }
+}
+*/
