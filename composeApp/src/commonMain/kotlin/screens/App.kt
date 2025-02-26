@@ -1,26 +1,17 @@
 package screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
-import androidx.compose.material.TextField
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import controller.TaskController
-import model.Task
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import repository.TeamRepository
 import util.Result
-import view.CreateTaskView
 import view.SpacesView
-import view.TaskView
-import view.UpdateTaskView
 
 @Composable
 @Preview
@@ -30,7 +21,6 @@ fun App() {
     var teamId by remember { mutableStateOf<String?>(null) }
     val space = rememberCoroutineScope()
 
-    // Obtener teamId mediante el repositorio; esto puede hacerse en un LaunchedEffect.
     LaunchedEffect(Unit) {
         val result = TeamRepository.getTeams()
         if (result is Result.Success && result.data.isNotEmpty()) {

@@ -64,7 +64,7 @@ data class SpaceFeatures(
 }
 
 @Serializable
-data class PostSpaceData(
+data class SpaceData(
     val name: String,
     val multiple_assignees: Boolean,
     val features: SpaceFeatures

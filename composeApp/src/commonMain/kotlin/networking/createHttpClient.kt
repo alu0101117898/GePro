@@ -6,7 +6,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
+import util.jsonConfig
 
 fun createHttpClient(engine: HttpClientEngine): HttpClient {
     return HttpClient(engine) {
@@ -14,11 +14,7 @@ fun createHttpClient(engine: HttpClientEngine): HttpClient {
             level = LogLevel.ALL
         }
         install(ContentNegotiation) {
-            json(
-                json = Json {
-                    ignoreUnknownKeys = true
-                }
-            )
+            json(json = jsonConfig)
         }
     }
 }
