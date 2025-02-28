@@ -1,5 +1,6 @@
 package controller
 
+import data.SpaceData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import model.space.Space
@@ -28,6 +29,13 @@ class SpaceController(private val scope: CoroutineScope) {
     fun deleteSpace(spaceId: String, onResult: (Result<Unit, NetworkError>) -> Unit) {
         scope.launch {
             val result = SpaceRepository.deleteSpace(spaceId)
+            onResult(result)
+        }
+    }
+
+    fun createSpace(teamId: String, spaceData: SpaceData, onResult: (Result<Space, NetworkError>) -> Unit) {
+        scope.launch {
+            val result = SpaceRepository.createSpace(teamId, spaceData)
             onResult(result)
         }
     }

@@ -43,7 +43,6 @@ fun App() {
             if (teamId == null) {
                 Text("Cargando información del equipo...")
             } else {
-                // Iniciamos el SpaceController con un scope
                 val spaceController = remember { controller.SpaceController(space) }
                 SpacesView(
                     spaceController = spaceController,
@@ -55,7 +54,6 @@ fun App() {
         "resourceHome" -> {
             Text("Pantalla para recursos aún no implementada.")
         }
-        // Aquí agregarías otras pantallas según evolucione la aplicación.
     }
 }
 /*

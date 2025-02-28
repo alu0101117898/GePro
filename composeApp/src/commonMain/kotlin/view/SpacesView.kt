@@ -1,26 +1,38 @@
 package view
 
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Card
+import androidx.compose.material.Checkbox
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -29,6 +41,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import controller.SpaceController
+import data.SpaceData
+import data.SpaceFeatures
 import kotlinx.coroutines.delay
 import model.space.Space
 import util.Result
@@ -44,16 +58,16 @@ fun SpacesView(
     var spaces by remember { mutableStateOf<List<Space>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
-
-    // Estados para manejar los diálogos de edición y eliminación
-    var editingSpace by remember { mutableStateOf<Space?>(null) }
-    var editedName by remember { mutableStateOf("") }
-    var deletingSpace by remember { mutableStateOf<Space?>(null) }
+    var showCreateErrorDialog by remember { mutableStateOf(false) } // Para manejar error al superar 5 espacios
+    var showCreateDialog by remember { mutableStateOf(false) } // Para mostrar el diálogo de creación
 
     fun refreshSpaces() {
         spaceController.getSpaces(teamId) { result ->
-            when(result) {
-                is Result.Success -> spaces = result.data
+            when (result) {
+                is Result.Success -> {
+                    spaces = result.data
+                    errorMessage = ""
+                }
                 is Result.Error -> errorMessage = "Error al cargar espacios: ${result.error}"
                 Result.Loading -> { }
             }
@@ -69,108 +83,83 @@ fun SpacesView(
         }
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        if (isLoading) {
-            CircularProgressIndicator()
-        } else if (errorMessage.isNotEmpty()) {
-            Text(text = errorMessage)
-        } else {
-            spaces.forEach { space ->
-                SpaceItem(
-                    space = space,
-                    onEdit = { selectedSpace ->
-                        // Al pulsar "Editar", establecemos el espacio a editar y su nombre actual
-                        editingSpace = selectedSpace
-                        editedName = selectedSpace.name
-                    },
-                    onDelete = { selectedSpace ->
-                        // Al pulsar "Borrar", guardamos el espacio a eliminar.
-                        deletingSpace = selectedSpace
-                    }
-                )
-                Spacer(modifier = Modifier.padding(top = 8.dp))
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator()
+            } else if (errorMessage.isNotEmpty()) {
+                Text(text = errorMessage)
+            } else {
+                spaces.forEach { space ->
+                    SpaceItem(
+                        space = space,
+                        onEdit = { updatedSpace ->
+                            onSpaceEdited(updatedSpace)
+                        },
+                        onDelete = { deletedSpace ->
+                            onSpaceDeleted(deletedSpace)
+                        }
+                    )
+                    Spacer(modifier = Modifier.padding(top = 8.dp))
+                }
+            }
+            Spacer(modifier = Modifier.height(80.dp))
+            Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
+                Text("Volver")
             }
         }
-        Spacer(modifier = Modifier.padding(top = 16.dp))
-        Button(onClick = onBack) {
-            Text("Volver")
+        FloatingActionButton(
+            onClick = {
+                if (spaces.size >= 5) {
+                    showCreateErrorDialog = true
+                } else {
+                    showCreateDialog = true
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Crear Espacio")
         }
     }
 
-    // AlertDialog para confirmar eliminación del espacio.
-    if (deletingSpace != null) {
+    if (showCreateErrorDialog) {
         AlertDialog(
-            onDismissRequest = { deletingSpace = null },
-            title = { Text("Confirmar eliminación") },
-            text = { Text("¿Está seguro de que desea eliminar el espacio \"${deletingSpace!!.name}\"?") },
+            onDismissRequest = { showCreateErrorDialog = false },
+            title = { Text("Límite alcanzado") },
+            text = { Text("El plan gratuito solo permite hasta 5 espacios.") },
             confirmButton = {
-                TextButton(onClick = {
-                    deletingSpace?.let { spaceToDelete ->
-                        spaceController.deleteSpace(spaceToDelete.id) { result ->
-                            when (result) {
-                                is Result.Success -> {
-                                    onSpaceDeleted(spaceToDelete)
-                                    refreshSpaces()
-                                }
-                                is Result.Error -> {
-                                    errorMessage = "Error al eliminar el espacio: ${result.error}"
-                                }
-                                else -> {}
-                            }
-                        }
-                    }
-                    deletingSpace = null
-                }) {
-                    Text("Eliminar")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { deletingSpace = null }) {
-                    Text("Cancelar")
+                TextButton(onClick = { showCreateErrorDialog = false }) {
+                    Text("Aceptar")
                 }
             }
         )
     }
-
-    // AlertDialog para editar el nombre del espacio.
-    if (editingSpace != null) {
-        AlertDialog(
-            onDismissRequest = { editingSpace = null },
-            title = { Text("Editar espacio") },
-            text = {
-                OutlinedTextField(
-                    value = editedName,
-                    onValueChange = { editedName = it },
-                    label = { Text("Nuevo nombre") }
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    editingSpace?.let { spaceToEdit ->
-                        val updatedSpace = spaceToEdit.copy(name = editedName)
-                        spaceController.updateSpace(updatedSpace) { result ->
-                            when (result) {
-                                is Result.Success -> {
-                                    onSpaceEdited(result.data)
-                                    refreshSpaces()
-                                }
-                                is Result.Error -> {
-                                    errorMessage = "Error al actualizar el espacio: ${result.error}"
-                                }
-                                else -> {}
-                            }
+    
+    if (showCreateDialog) {
+        CreateSpace(
+            teamId = teamId,
+            onCreate = { newSpaceData ->
+                spaceController.createSpace(teamId, newSpaceData) { result ->
+                    when (result) {
+                        is Result.Success -> {
+                            refreshSpaces()
                         }
+                        is Result.Error -> {
+                            errorMessage = "Error al crear espacio: ${result.error}"
+                        }
+                        else -> { }
                     }
-                    editingSpace = null
-                }) {
-                    Text("Actualizar")
                 }
+                showCreateDialog = false
             },
-            dismissButton = {
-                TextButton(onClick = { editingSpace = null }) {
-                    Text("Cancelar")
-                }
-            }
+            onDismiss = { showCreateDialog = false }
         )
     }
 }
@@ -237,4 +226,80 @@ fun SpaceItem(
             Text("Borrar")
         }
     }
+}
+
+@Composable
+fun CreateSpace(
+    teamId: String,
+    onCreate: (SpaceData) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var isPrivate by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Crear Nuevo Espacio") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nombre") },
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Descripción") },
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+                Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                    Checkbox(
+                        checked = isPrivate,
+                        onCheckedChange = { isPrivate = it }
+                    )
+                    Text(
+                        text = if (isPrivate) "Privado" else "Público",
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (name.isNotBlank()) {
+                        val features = SpaceFeatures(
+                            due_dates = SpaceFeatures.DueDates(true, true, true, false),
+                            time_tracking = SpaceFeatures.TimeTracking(true),
+                            tags = SpaceFeatures.Tags(true),
+                            time_estimates = SpaceFeatures.TimeEstimates(true),
+                            checklists = SpaceFeatures.Checklists(true),
+                            custom_fields = SpaceFeatures.CustomFields(true),
+                            remap_dependencies = SpaceFeatures.RemapDependencies(true),
+                            dependency_warning = SpaceFeatures.DependencyWarning(true),
+                            portfolios = SpaceFeatures.Portfolios(true)
+                        )
+                        val spaceData = SpaceData(
+                            name = name,
+                            multiple_assignees = false, // Puedes ajustar este valor según la lógica
+                            features = features
+                        )
+                        onCreate(spaceData)
+                    }
+                }
+            ) {
+                Text("Crear")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss
+            ) {
+                Text("Cancelar")
+            }
+        }
+    )
 }
