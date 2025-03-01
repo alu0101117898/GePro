@@ -6,7 +6,7 @@ import data.SpaceFeatures
 fun Space.toSpaceData(): SpaceData {
     return SpaceData(
         name = this.name,
-        multiple_assignees = false, // Puedes modificar este valor según corresponda
+        multiple_assignees = false,
         features = SpaceFeatures(
             due_dates = SpaceFeatures.DueDates(
                 enabled = true,
