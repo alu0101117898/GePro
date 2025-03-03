@@ -16,8 +16,8 @@ import io.ktor.http.isSuccess
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import model.space.Space
-import util.NetworkError
-import util.Result
+import util.errorhandling.NetworkError
+import util.errorhandling.Result
 
 class SpaceClient(private val httpClient: HttpClient) {
 

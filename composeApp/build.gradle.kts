@@ -1,7 +1,4 @@
-import com.android.build.gradle.ProguardFiles.getDefaultProguardFile
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -28,7 +25,7 @@ kotlin {
         }
     }
 
-    listOf(
+    /*(
         iosX64(),
         iosArm64(),
         iosSimulatorArm64()
@@ -38,7 +35,7 @@ kotlin {
             isStatic = true
         }
     }
-
+    */
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -51,8 +48,10 @@ kotlin {
 
                 // Ktor y Logback
                 implementation(libs.bundles.ktor)
-                implementation("ch.qos.logback:logback-classic:1.2.11")
+                implementation(libs.logback.classic)
                 implementation(libs.ktor.ktor.client.cio)
+
+                implementation(libs.kotlinx.datetime)
             }
         }
         val androidMain by getting {
@@ -64,11 +63,13 @@ kotlin {
                 implementation(libs.androidx.appcompat)
             }
         }
+        /*
         val iosMain by creating {
             dependencies {
                 implementation(libs.ktor.client.darwin)
             }
         }
+        */
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
@@ -127,6 +128,11 @@ dependencies {
     implementation(libs.androidx.databinding.compiler.v881)
     implementation(libs.androidx.databinding.runtime)
     implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.espresso.core)
+    implementation(libs.protolite.well.known.types)
+    implementation(libs.androidx.compose.material.core)
+    implementation(libs.androidx.media3.common.ktx)
+    implementation(libs.androidx.foundation.layout.android)
 }
 
 compose.desktop {

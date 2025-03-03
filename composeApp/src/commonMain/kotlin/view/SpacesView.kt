@@ -1,10 +1,10 @@
 package view
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -12,13 +12,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,18 +23,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import controller.SpaceController
 import kotlinx.coroutines.delay
+import model.task.Task
 import model.space.Space
-import util.Result
+import screens.AdminHeader
+import util.errorhandling.Result
 import util.functions.spaces.CreateSpace
 import util.functions.spaces.SpaceItem
+import controller.ListController
+import controller.TaskController
+import util.errorhandling.NetworkError
 
 @Composable
 fun SpacesView(
     spaceController: SpaceController,
+    taskController: TaskController,
+    listController: ListController,
     teamId: String,
+    userName: String,
     onBack: () -> Unit,
     onSpaceEdited: (Space) -> Unit = {},
     onSpaceDeleted: (Space) -> Unit = {}
@@ -46,15 +52,13 @@ fun SpacesView(
     var spaces by remember { mutableStateOf<List<Space>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
-    var showCreateErrorDialog by remember { mutableStateOf(false) } // Límite de 5 espacios
-    var showCreateDialog by remember { mutableStateOf(false) } // Mostrar diálogo de creación
+    var showCreateErrorDialog by remember { mutableStateOf(false) }
+    var showCreateDialog by remember { mutableStateOf(false) }
 
-    // Estados para los diálogos de edición y borrado
     var editingSpace by remember { mutableStateOf<Space?>(null) }
     var editedName by remember { mutableStateOf("") }
     var deletingSpace by remember { mutableStateOf<Space?>(null) }
 
-    // Función para refrescar espacios
     fun refreshSpaces() {
         spaceController.getSpaces(teamId) { result ->
             when (result) {
@@ -77,57 +81,97 @@ fun SpacesView(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    val onLoadTasks: (Space, (Result<List<Task>, NetworkError>) -> Unit) -> Unit = { space, onResult ->
+        listController.getLists(space.id) { listResult ->
+            when (listResult) {
+                is Result.Success -> {
+                    val lists = listResult.data
+                    val tasks = mutableListOf<Task>()
+                    var processed = 0
+                    if (lists.isEmpty()) {
+                        onResult(Result.Success(emptyList()))
+                    }
+                    lists.forEach { taskList ->
+                        taskController.getTasks(taskList.id) { taskResult ->
+                            if (taskResult is Result.Success) {
+                                tasks.addAll(taskResult.data)
+                            }
+                            processed++
+                            if (processed == lists.size) {
+                                onResult(Result.Success(tasks))
+                            }
+                        }
+                    }
+                }
+                is Result.Error -> {
+                    onResult(Result.Error(listResult.error))
+                }
+                Result.Loading -> { }
+            }
+        }
+    }
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(
+            Brush.verticalGradient(
+                colors = listOf(Color(0xFFE3F2FD), Color(0xFFBBDEFB))
+            )
+        )
+    ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .fillMaxWidth()
         ) {
+            AdminHeader(
+                userName = userName,
+                onCreateProject = {
+                    if (spaces.size >= 5) {
+                        showCreateErrorDialog = true
+                    } else {
+                        showCreateDialog = true
+                    }
+                },
+                onViewProjectStatus = { /* Placeholder */ },
+                onDelayedTasks = { /* Placeholder */ }
+            )
+            Spacer(modifier = Modifier.padding(vertical = 8.dp))
             if (isLoading) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             } else if (errorMessage.isNotEmpty()) {
-                Text(text = errorMessage)
+                Text(text = errorMessage, modifier = Modifier.padding(16.dp))
             } else {
                 spaces.forEach { space ->
+
                     SpaceItem(
                         space = space,
+                        taskController = taskController,
                         onEdit = { selectedSpace ->
                             editingSpace = selectedSpace
                             editedName = selectedSpace.name
                         },
                         onDelete = { selectedSpace ->
                             deletingSpace = selectedSpace
-                        }
+                        },
+                        onLoadTasks = onLoadTasks
                     )
                     Spacer(modifier = Modifier.padding(top = 8.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(80.dp))
-            Button(
-                onClick = onBack,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Volver")
-            }
+            Spacer(modifier = Modifier.height(120.dp))
         }
-        FloatingActionButton(
-            onClick = {
-                if (spaces.size >= 5) {
-                    showCreateErrorDialog = true
-                } else {
-                    showCreateDialog = true
-                }
-            },
+        Button(
+            onClick = onBack,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
+                .height(40.dp)
         ) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = "Crear Espacio")
+            Text("Volver")
         }
     }
 
-    // Diálogo de error si se supera el límite gratuito de 5 espacios.
     if (showCreateErrorDialog) {
         AlertDialog(
             onDismissRequest = { showCreateErrorDialog = false },
@@ -141,19 +185,14 @@ fun SpacesView(
         )
     }
 
-    // Diálogo para crear un nuevo espacio.
     if (showCreateDialog) {
         CreateSpace(
             onCreate = { newSpaceData ->
                 spaceController.createSpace(teamId, newSpaceData) { result ->
                     when (result) {
-                        is Result.Success -> {
-                            refreshSpaces()
-                        }
-                        is Result.Error -> {
-                            errorMessage = "Error al crear espacio: ${result.error}"
-                        }
-                        else -> { }
+                        is Result.Success -> refreshSpaces()
+                        is Result.Error -> { errorMessage = "Error al crear espacio: ${result.error}" }
+                        else -> {}
                     }
                 }
                 showCreateDialog = false
@@ -162,7 +201,7 @@ fun SpacesView(
         )
     }
 
-    // Diálogo para confirmar la eliminación de un espacio.
+    // Diálogo para confirmar eliminación del espacio
     if (deletingSpace != null) {
         AlertDialog(
             onDismissRequest = { deletingSpace = null },
@@ -197,19 +236,17 @@ fun SpacesView(
         )
     }
 
-    // Diálogo para editar un espacio: muestra un campo de texto para modificar el nombre.
+    // Diálogo para editar el espacio
     if (editingSpace != null) {
         AlertDialog(
             onDismissRequest = { editingSpace = null },
             title = { Text("Editar espacio") },
             text = {
-                Column {
-                    OutlinedTextField(
-                        value = editedName,
-                        onValueChange = { editedName = it },
-                        label = { Text("Nuevo nombre") }
-                    )
-                }
+                OutlinedTextField(
+                    value = editedName,
+                    onValueChange = { editedName = it },
+                    label = { Text("Nuevo nombre") }
+                )
             },
             confirmButton = {
                 TextButton(onClick = {

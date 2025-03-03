@@ -1,11 +1,11 @@
-package model
+package model.task
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Task(
-    val id: String,
+    val id: String? = null,
     @SerialName("custom_id") val customId: String? = null,
     @SerialName("custom_item_id") val customItemId: Int? = null,
     val name: String,
@@ -13,10 +13,10 @@ data class Task(
     val description: String? = null,
     val status: Status? = null,
     @SerialName("orderindex") val orderIndex: String? = null,
-    @SerialName("date_created") val dateCreated: String? = null,
-    @SerialName("date_updated") val dateUpdated: String? = null,
-    @SerialName("date_closed") val dateClosed: String? = null,
-    @SerialName("date_done") val dateDone: String? = null,
+    @SerialName("date_created") val dateCreated: Long? = null,
+    @SerialName("date_updated") val dateUpdated: Long? = null,
+    @SerialName("date_closed") val dateClosed: Long? = null,
+    @SerialName("date_done") val dateDone: Long? = null,
     val archived: Boolean? = null,
     val creator: User? = null,
     val assignees: List<User>? = null,
@@ -27,8 +27,8 @@ data class Task(
     val parent: String? = null,
     @SerialName("top_level_parent") val topLevelParent: String? = null,
     val priority: Priority? = null,
-    @SerialName("due_date") val dueDate: String? = null,
-    @SerialName("start_date") val startDate: String? = null,
+    @SerialName("due_date") val dueDate: Long? = null,
+    @SerialName("start_date") val startDate: Long? = null,
     val points: Int? = null,
     @SerialName("time_estimate") val timeEstimate: Long? = null,
     @SerialName("time_spent") val timeSpent: Long? = null,

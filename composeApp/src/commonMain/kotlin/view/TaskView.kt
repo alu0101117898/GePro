@@ -19,8 +19,8 @@ import controller.DefaultIdsProvider
 import controller.TaskController
 import data.TaskData
 import kotlinx.coroutines.launch
-import model.Task
-import util.Result
+import model.task.Task
+import util.errorhandling.Result
 
 @Composable
 fun TaskView(task: Task, modifier: Modifier = Modifier) {
@@ -117,16 +117,20 @@ fun UpdateTaskView(taskController: TaskController, task: Task, onBack: () -> Uni
         Button(onClick = {
             isLoading = true
             val taskData = TaskData(name = name, description = description)
-            taskController.updateTask(task.id, taskData) { result ->
-                isLoading = false
-                when (result) {
-                    is Result.Success -> {
-                        message = "¡Tarea actualizada exitosamente!"
+            task.id?.let {
+                taskController.updateTask(it, taskData) { result ->
+                    isLoading = false
+                    when (result) {
+                        is Result.Success -> {
+                            message = "¡Tarea actualizada exitosamente!"
+                        }
+
+                        is Result.Error -> {
+                            message = "Error al actualizar la tarea: ${result.error}"
+                        }
+
+                        else -> {}
                     }
-                    is Result.Error -> {
-                        message = "Error al actualizar la tarea: ${result.error}"
-                    }
-                    else -> {}
                 }
             }
         }) {
@@ -151,16 +155,20 @@ fun DeleteTaskView(taskController: TaskController, task: Task, onBack: () -> Uni
     Column(modifier = Modifier.padding(16.dp)) {
         Button(onClick = {
             isLoading = true
-            taskController.deleteTask(task.id) { result ->
-                isLoading = false
-                when (result) {
-                    is Result.Success -> {
-                        message = "¡Tarea eliminada exitosamente!"
+            task.id?.let {
+                taskController.deleteTask(it) { result ->
+                    isLoading = false
+                    when (result) {
+                        is Result.Success -> {
+                            message = "¡Tarea eliminada exitosamente!"
+                        }
+
+                        is Result.Error -> {
+                            message = "Error al eliminar la tarea: ${result.error}"
+                        }
+
+                        else -> {}
                     }
-                    is Result.Error -> {
-                        message = "Error al eliminar la tarea: ${result.error}"
-                    }
-                    else -> {}
                 }
             }
         }) {

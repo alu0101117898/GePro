@@ -7,8 +7,8 @@ import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import model.Team
 import kotlinx.serialization.Serializable
-import util.NetworkError
-import util.Result
+import util.errorhandling.NetworkError
+import util.errorhandling.Result
 
 
 class TeamClient(private val httpClient: HttpClient) {

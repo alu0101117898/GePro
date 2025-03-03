@@ -1,4 +1,4 @@
-package util
+package util.errorhandling
 
 enum class NetworkError : Error {
     REQUEST_TIMEOUT,

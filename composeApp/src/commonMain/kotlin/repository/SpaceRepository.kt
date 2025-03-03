@@ -4,8 +4,8 @@ import data.SpaceData
 import model.space.Space
 import networking.SpaceClient
 import networking.createHttpClient
-import util.NetworkError
-import util.Result
+import util.errorhandling.NetworkError
+import util.errorhandling.Result
 import util.jsonConfig
 
 object SpaceRepository {

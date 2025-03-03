@@ -16,8 +16,8 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import util.NetworkError
-import util.Result
+import util.errorhandling.NetworkError
+import util.errorhandling.Result
 
 const val token = "pk_152464594_FXIX0YM863JKD5OEPTXXGZDPJKAPQGDI"
 
@@ -114,6 +114,28 @@ class TaskFunction(private val httpClient: HttpClient) {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            Result.Error(NetworkError.UNKNOWN)
+        }
+    }
+
+    suspend fun getTasks(listId: String): Result<String, NetworkError> {
+        return try {
+            val response = httpClient.get("https://api.clickup.com/api/v2/list/$listId/task") {
+                header(HttpHeaders.Authorization, token)
+                header(HttpHeaders.ContentType, ContentType.Application.Json)
+            }
+            if (response.status.isSuccess()) {
+                val taskData: String = response.body()
+                Result.Success(taskData)
+            } else {
+                when (response.status.value) {
+                    404 -> Result.Error(NetworkError.NOT_FOUND)
+                    401 -> Result.Error(NetworkError.UNAUTHORIZED)
+                    429 -> Result.Error(NetworkError.TOO_MANY_REQUESTS)
+                    else -> Result.Error(NetworkError.UNKNOWN)
+                }
+            }
+        } catch (e: Exception) {
             Result.Error(NetworkError.UNKNOWN)
         }
     }

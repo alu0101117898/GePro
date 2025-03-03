@@ -1,11 +1,10 @@
 package controller
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import repository.*
-import util.NetworkError
-import util.Result
+import util.errorhandling.NetworkError
+import util.errorhandling.Result
 
 object DefaultIdsProvider {
 

@@ -3,19 +3,22 @@ package controller
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import repository.TaskRepository
-import util.NetworkError
-import util.Result
+import util.errorhandling.NetworkError
+import util.errorhandling.Result
 import data.TaskData
-import model.Task
+import model.task.Task
 
 class TaskController(private val scope: CoroutineScope) {
 
+    /*
     fun getTask(taskId: String, onResult: (Result<Task, NetworkError>) -> Unit) {
         scope.launch {
             val result = TaskRepository.getTask(taskId)
             onResult(result)
         }
     }
+    */
+
 
     fun createTask(listId: String, taskData: TaskData, onResult: (Result<Task, NetworkError>) -> Unit) {
         scope.launch {
@@ -34,6 +37,12 @@ class TaskController(private val scope: CoroutineScope) {
     fun deleteTask(taskId: String, onResult: (Result<Unit, NetworkError>) -> Unit) {
         scope.launch {
             val result = TaskRepository.deleteTask(taskId)
+            onResult(result)
+        }
+    }
+    fun getTasks(listId: String, onResult: (Result<List<Task>, NetworkError>) -> Unit) {
+        scope.launch {
+            val result = TaskRepository.getTasks(listId)
             onResult(result)
         }
     }

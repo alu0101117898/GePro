@@ -1,6 +1,7 @@
 package data
 
 import kotlinx.serialization.Serializable
+import model.task.Task
 
 @Serializable
 data class TaskData(
@@ -23,4 +24,11 @@ data class TaskData(
 data class CustomField(
     val id: String,
     val value: String
+)
+
+fun Task.toTaskData() = TaskData(
+    name = name,
+    description = description,
+    dueDate = dueDate,
+    status = status?.status
 )

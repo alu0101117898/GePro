@@ -6,8 +6,8 @@ import kotlinx.coroutines.launch
 import model.space.Space
 import model.space.toSpaceData
 import repository.SpaceRepository
-import util.NetworkError
-import util.Result
+import util.errorhandling.NetworkError
+import util.errorhandling.Result
 
 class SpaceController(private val scope: CoroutineScope) {
 

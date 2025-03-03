@@ -10,7 +10,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import repository.TeamRepository
-import util.Result
+import util.errorhandling.Result
 import view.SpacesView
 
 @Composable
@@ -32,10 +32,10 @@ fun App() {
         "roleSelection" -> {
             RoleSelectionView { role ->
                 userRole = role
-                if (role == "admin") {
-                    currentScreen = "spaces"
+                currentScreen = if (role == "admin") {
+                    "spaces"
                 } else {
-                    currentScreen = "resourceHome"
+                    "resourceHome"
                 }
             }
         }
@@ -44,10 +44,16 @@ fun App() {
                 Text("Cargando información del equipo...")
             } else {
                 val spaceController = remember { controller.SpaceController(space) }
+                val listController = remember { controller.ListController(space) }
+                val taskController = remember { controller.TaskController(space) }
                 SpacesView(
                     spaceController = spaceController,
+                    listController = listController,
+                    taskController = taskController,
                     teamId = teamId!!,
-                    onBack = { currentScreen = "roleSelection" }
+                    onBack = { currentScreen = "roleSelection" },
+                    userName = userRole!!
+
                 )
             }
         }
