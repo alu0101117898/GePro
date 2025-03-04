@@ -67,5 +67,15 @@ data class SpaceFeatures(
 data class SpaceData(
     val name: String,
     val multiple_assignees: Boolean,
-    val features: SpaceFeatures
+    val features: SpaceFeatures,
+    val statuses: List<StatusData>
+
+)
+
+@Serializable
+data class StatusData(
+    val status: String,
+    val type: String,
+    val orderindex: Int,
+    val color: String
 )

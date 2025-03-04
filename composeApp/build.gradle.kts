@@ -133,6 +133,7 @@ dependencies {
     implementation(libs.androidx.compose.material.core)
     implementation(libs.androidx.media3.common.ktx)
     implementation(libs.androidx.foundation.layout.android)
+    implementation(libs.androidx.ui.android)
 }
 
 compose.desktop {

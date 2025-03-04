@@ -30,7 +30,6 @@ fun RoleSelectionView(
         }) {
             Text("Administrador")
         }
-        // Espacio entre botones
         androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(16.dp))
         Button(onClick = {
             selectedRole = "resource"

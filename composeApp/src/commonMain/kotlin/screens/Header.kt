@@ -32,13 +32,9 @@ fun AdminHeader(
     var menuExpanded by remember { mutableStateOf(false) }
     var buttonPosition by remember { mutableStateOf(DpOffset.Zero) }
 
-    val gradient = Brush.horizontalGradient(
-        colors = listOf(Color(0xFFE3F2FD), Color(0xFFBBDEFB))
-    )
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(brush = gradient)
             .padding(16.dp)
     ) {
         Text(

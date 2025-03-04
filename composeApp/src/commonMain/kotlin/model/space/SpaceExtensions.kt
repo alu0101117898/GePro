@@ -2,6 +2,7 @@ package model.space
 
 import data.SpaceData
 import data.SpaceFeatures
+import data.StatusData
 
 fun Space.toSpaceData(): SpaceData {
     return SpaceData(
@@ -22,6 +23,11 @@ fun Space.toSpaceData(): SpaceData {
             remap_dependencies = SpaceFeatures.RemapDependencies(enabled = true),
             dependency_warning = SpaceFeatures.DependencyWarning(enabled = true),
             portfolios = SpaceFeatures.Portfolios(enabled = true)
+        ),
+        statuses = listOf(
+            StatusData(status = "to do", type = "open", orderindex = 0, color = "#87909e"),
+            StatusData(status = "in progress", type = "custom", orderindex = 1, color = "#5f55ee"),
+            StatusData(status = "complete", type = "closed", orderindex = 2, color = "#008844")
         )
     )
 }

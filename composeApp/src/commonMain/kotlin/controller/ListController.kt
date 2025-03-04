@@ -15,4 +15,11 @@ class ListController(private val scope: CoroutineScope) {
             onResult(result)
         }
     }
+
+    fun createList(spaceId: String, listName: String, onResult: (Result<TaskList, NetworkError>) -> Unit) {
+        scope.launch {
+            val result = ListRepository.createList(spaceId, listName)
+            onResult(result)
+        }
+    }
 }

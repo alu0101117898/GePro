@@ -2,6 +2,7 @@ package data
 
 import kotlinx.serialization.Serializable
 import model.task.Task
+import kotlinx.serialization.SerialName
 
 @Serializable
 data class TaskData(
@@ -10,7 +11,8 @@ data class TaskData(
     val status: String? = null,
     val assignees: List<Long>? = null,
     val tags: List<String>? = null,
-    val dueDate: Long? = null,
+    @SerialName("due_date")
+    val dueDate: Long,
     val startDate: Long? = null,
     val priority: Long? = null,
     val notifyAll: Boolean = true,
@@ -29,6 +31,6 @@ data class CustomField(
 fun Task.toTaskData() = TaskData(
     name = name,
     description = description,
-    dueDate = dueDate,
+    dueDate = dueDate!!,
     status = status?.status
 )

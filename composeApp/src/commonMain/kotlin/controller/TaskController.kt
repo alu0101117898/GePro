@@ -10,22 +10,13 @@ import model.task.Task
 
 class TaskController(private val scope: CoroutineScope) {
 
-    /*
-    fun getTask(taskId: String, onResult: (Result<Task, NetworkError>) -> Unit) {
-        scope.launch {
-            val result = TaskRepository.getTask(taskId)
-            onResult(result)
-        }
-    }
-    */
-
-
     fun createTask(listId: String, taskData: TaskData, onResult: (Result<Task, NetworkError>) -> Unit) {
         scope.launch {
             val result = TaskRepository.createTask(listId, taskData)
             onResult(result)
         }
     }
+
 
     fun updateTask(taskId: String, taskData: TaskData, onResult: (Result<Task, NetworkError>) -> Unit) {
         scope.launch {

@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import data.SpaceData
 import data.SpaceFeatures
+import data.StatusData
 
 
 @Composable
@@ -27,6 +28,12 @@ fun CreateSpace(
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var isPrivate by remember { mutableStateOf(false) }
+
+    val defaultStatuses = listOf(
+        StatusData(status = "to do", type = "open", orderindex = 0, color = "#87909e"),
+        StatusData(status = "in progress", type = "custom", orderindex = 1, color = "#5f55ee"),
+        StatusData(status = "complete", type = "closed", orderindex = 2, color = "#008844")
+    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -74,8 +81,9 @@ fun CreateSpace(
                         )
                         val spaceData = SpaceData(
                             name = name,
-                            multiple_assignees = false, // Puedes ajustar este valor según la lógica
-                            features = features
+                            multiple_assignees = false,
+                            features = features,
+                            statuses = defaultStatuses
                         )
                         onCreate(spaceData)
                     }

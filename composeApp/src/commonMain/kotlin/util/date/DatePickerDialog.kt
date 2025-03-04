@@ -1,4 +1,4 @@
-package util
+package util.date
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -55,7 +55,6 @@ fun DatePickerDialog(
         title = { Text("Seleccionar fecha") },
         text = {
             Column {
-                // Controles de mes/año
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -103,13 +102,7 @@ fun DatePickerDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    onDateSelected(
-                        LocalDate(
-                            year = selectedDate.year,
-                            month = selectedDate.month,
-                            dayOfMonth = selectedDate.dayOfMonth
-                        )
-                    )
+                    onDateSelected(selectedDate)
                     onDismiss()
                 }
             ) {

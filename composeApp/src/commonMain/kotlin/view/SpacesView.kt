@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
@@ -55,6 +57,7 @@ fun SpacesView(
     var showCreateErrorDialog by remember { mutableStateOf(false) }
     var showCreateDialog by remember { mutableStateOf(false) }
 
+    var listId by remember { mutableStateOf<String?>(null) }
     var editingSpace by remember { mutableStateOf<Space?>(null) }
     var editedName by remember { mutableStateOf("") }
     var deletingSpace by remember { mutableStateOf<Space?>(null) }
@@ -76,7 +79,7 @@ fun SpacesView(
     LaunchedEffect(teamId) {
         refreshSpaces()
         while (true) {
-            delay(30000L)
+            delay(300000L)
             refreshSpaces()
         }
     }
@@ -91,6 +94,7 @@ fun SpacesView(
                     if (lists.isEmpty()) {
                         onResult(Result.Success(emptyList()))
                     }
+                    listId = lists.first().id
                     lists.forEach { taskList ->
                         taskController.getTasks(taskList.id) { taskResult ->
                             if (taskResult is Result.Success) {
@@ -122,7 +126,6 @@ fun SpacesView(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
         ) {
             AdminHeader(
                 userName = userName,
@@ -136,27 +139,34 @@ fun SpacesView(
                 onViewProjectStatus = { /* Placeholder */ },
                 onDelayedTasks = { /* Placeholder */ }
             )
-            Spacer(modifier = Modifier.padding(vertical = 8.dp))
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-            } else if (errorMessage.isNotEmpty()) {
-                Text(text = errorMessage, modifier = Modifier.padding(16.dp))
-            } else {
-                spaces.forEach { space ->
 
-                    SpaceItem(
-                        space = space,
-                        taskController = taskController,
-                        onEdit = { selectedSpace ->
-                            editingSpace = selectedSpace
-                            editedName = selectedSpace.name
-                        },
-                        onDelete = { selectedSpace ->
-                            deletingSpace = selectedSpace
-                        },
-                        onLoadTasks = onLoadTasks
-                    )
-                    Spacer(modifier = Modifier.padding(top = 8.dp))
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Spacer(modifier = Modifier.padding(vertical = 8.dp))
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                } else if (errorMessage.isNotEmpty()) {
+                    Text(text = errorMessage, modifier = Modifier.padding(16.dp))
+                } else {
+                    spaces.forEach { space ->
+                        SpaceItem(
+                            space = space,
+                            taskController = taskController,
+                            onEdit = { selectedSpace ->
+                                editingSpace = selectedSpace
+                                editedName = selectedSpace.name
+                            },
+                            onDelete = { selectedSpace ->
+                                deletingSpace = selectedSpace
+                            },
+                            onLoadTasks = onLoadTasks,
+                            listId = listId.toString(),
+                        )
+                        Spacer(modifier = Modifier.padding(top = 8.dp))
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(120.dp))
@@ -172,25 +182,23 @@ fun SpacesView(
         }
     }
 
-    if (showCreateErrorDialog) {
-        AlertDialog(
-            onDismissRequest = { showCreateErrorDialog = false },
-            title = { Text("Límite alcanzado") },
-            text = { Text("El plan gratuito solo permite hasta 5 espacios.") },
-            confirmButton = {
-                TextButton(onClick = { showCreateErrorDialog = false }) {
-                    Text("Aceptar")
-                }
-            }
-        )
-    }
-
     if (showCreateDialog) {
         CreateSpace(
             onCreate = { newSpaceData ->
                 spaceController.createSpace(teamId, newSpaceData) { result ->
                     when (result) {
-                        is Result.Success -> refreshSpaces()
+                        is Result.Success -> {
+                            val newSpace = result.data
+                            listController.createList(newSpace.id, "List") { listResult ->
+                                when (listResult) {
+                                    is Result.Success -> refreshSpaces()
+                                    is Result.Error -> {
+                                        errorMessage = "Error al crear lista: ${listResult.error}"
+                                    }
+                                    else -> {}
+                                }
+                            }
+                        }
                         is Result.Error -> { errorMessage = "Error al crear espacio: ${result.error}" }
                         else -> {}
                     }
@@ -201,7 +209,6 @@ fun SpacesView(
         )
     }
 
-    // Diálogo para confirmar eliminación del espacio
     if (deletingSpace != null) {
         AlertDialog(
             onDismissRequest = { deletingSpace = null },
@@ -236,7 +243,6 @@ fun SpacesView(
         )
     }
 
-    // Diálogo para editar el espacio
     if (editingSpace != null) {
         AlertDialog(
             onDismissRequest = { editingSpace = null },
@@ -273,6 +279,19 @@ fun SpacesView(
             dismissButton = {
                 TextButton(onClick = { editingSpace = null }) {
                     Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    if (showCreateErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showCreateErrorDialog = false },
+            title = { Text("Límite alcanzado") },
+            text = { Text("El plan gratuito solo permite hasta 5 espacios.") },
+            confirmButton = {
+                TextButton(onClick = { showCreateErrorDialog = false }) {
+                    Text("Aceptar")
                 }
             }
         )

@@ -15,9 +15,9 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
+import util.jsonConfig
 
 const val token = "pk_152464594_FXIX0YM863JKD5OEPTXXGZDPJKAPQGDI"
 
@@ -46,35 +46,41 @@ class TaskFunction(private val httpClient: HttpClient) {
     }
     suspend fun createTask(listId: String, taskData: TaskData): Result<String, NetworkError> {
         return try {
+            println("Intentando crear tarea en ClickUp. listId: $listId")
+
             val response: HttpResponse = httpClient.post("https://api.clickup.com/api/v2/list/$listId/task") {
                 header(HttpHeaders.Authorization, token)
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
-                setBody(Json.encodeToString(taskData))
+                setBody(jsonConfig.encodeToString(taskData))
             }
+
             if (response.status.isSuccess()) {
                 val responseData: String = response.body()
                 Result.Success(responseData)
             } else {
+                println("Error en la respuesta de ClickUp: ${response.status}") // LOG para depurar
                 when (response.status.value) {
                     400 -> Result.Error(NetworkError.BAD_REQUEST)
-                    401 -> Result.Error(NetworkError.UNAUTHORIZED)
-                    403 -> Result.Error(NetworkError.FORBIDDEN)
-                    404 -> Result.Error(NetworkError.NOT_FOUND)
-                    429 -> Result.Error(NetworkError.TOO_MANY_REQUESTS)
+                    401 -> Result.Error(NetworkError.UNAUTHORIZED) // Token incorrecto
+                    403 -> Result.Error(NetworkError.FORBIDDEN) // Sin permisos en el equipo
+                    404 -> Result.Error(NetworkError.NOT_FOUND) // List ID incorrecto
+                    429 -> Result.Error(NetworkError.TOO_MANY_REQUESTS) // Límite de API alcanzado
                     else -> Result.Error(NetworkError.UNKNOWN)
                 }
             }
         } catch (e: Exception) {
+            println("Excepción al crear tarea: ${e.message}") // LOG para depurar
             Result.Error(NetworkError.UNKNOWN)
         }
     }
+
 
     suspend fun updateTask(taskId: String, taskData: TaskData): Result<String, NetworkError> {
         return try {
             val response: HttpResponse = httpClient.put("https://api.clickup.com/api/v2/task/$taskId") {
                 header(HttpHeaders.Authorization, token)
                 contentType(ContentType.Application.Json)
-                setBody(Json.encodeToString(taskData))
+                setBody(jsonConfig.encodeToString(taskData))
             }
             if (response.status.isSuccess()) {
                 val responseData: String = response.body()

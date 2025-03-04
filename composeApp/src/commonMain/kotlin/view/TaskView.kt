@@ -30,7 +30,7 @@ fun TaskView(task: Task, modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
+/*@Composable
 fun CreateTaskView(taskController: TaskController) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -185,3 +185,4 @@ fun DeleteTaskView(taskController: TaskController, task: Task, onBack: () -> Uni
         }
     }
 }
+*/
