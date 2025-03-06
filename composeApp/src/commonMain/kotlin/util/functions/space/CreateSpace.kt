@@ -1,4 +1,4 @@
-package util.functions.spaces
+package util.functions.space
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

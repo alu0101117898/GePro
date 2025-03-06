@@ -4,6 +4,10 @@ import data.SpaceData
 import data.SpaceFeatures
 import data.StatusData
 
+/**
+ * Extension function to convert a Space object to a SpaceData object.
+ * @return The SpaceData object.
+ */
 fun Space.toSpaceData(): SpaceData {
     return SpaceData(
         name = this.name,

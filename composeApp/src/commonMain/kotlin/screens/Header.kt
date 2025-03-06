@@ -38,7 +38,7 @@ fun AdminHeader(
             .padding(16.dp)
     ) {
         Text(
-            text = "Hola, $userName.",
+            text = "Hola, $userName",
             fontSize = 28.sp,
             color = Color.Black,
             modifier = Modifier.align(Alignment.Center)

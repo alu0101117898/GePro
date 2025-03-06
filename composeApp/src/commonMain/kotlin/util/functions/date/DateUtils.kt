@@ -1,4 +1,4 @@
-package util.date
+package util.functions.date
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone

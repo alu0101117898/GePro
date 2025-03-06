@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
@@ -34,8 +32,8 @@ import model.task.Task
 import model.space.Space
 import screens.AdminHeader
 import util.errorhandling.Result
-import util.functions.spaces.CreateSpace
-import util.functions.spaces.SpaceItem
+import util.functions.space.CreateSpace
+import util.functions.space.SpaceItem
 import controller.ListController
 import controller.TaskController
 import util.errorhandling.NetworkError
@@ -79,7 +77,7 @@ fun SpacesView(
     LaunchedEffect(teamId) {
         refreshSpaces()
         while (true) {
-            delay(300000L)
+            delay(30000L)
             refreshSpaces()
         }
     }

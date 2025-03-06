@@ -1,4 +1,4 @@
-package util.date
+package util.functions.date
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
