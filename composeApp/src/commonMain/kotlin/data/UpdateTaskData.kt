@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 import model.task.Task
 import kotlinx.serialization.SerialName
 
-
 /**
  * Data class for task data
  * @property name name of the task
@@ -23,11 +22,11 @@ import kotlinx.serialization.SerialName
  * @constructor Create empty Task data
  */
 @Serializable
-data class TaskData(
+data class UpdateTaskData(
     val name: String,
     val description: String? = null,
     val status: String? = null,
-    val assignees: List<Long>? = null,
+    val assignees: AssigneesUpdate? = null,
     val tags: List<String>? = null,
     @SerialName("due_date")
     val dueDate: Long,
@@ -39,6 +38,24 @@ data class TaskData(
     val checkRequiredCustomFields: Boolean = false,
     val customFields: List<CustomField>? = null
 )
+
+@Serializable
+data class CreateTaskData(
+    val name: String,
+    val description: String? = null,
+    val status: String? = null,
+    val assignees: List<Int>? = null,
+    val tags: List<String>? = null,
+    @SerialName("due_date")
+    val dueDate: Long,
+    val priority: Int? = null,
+    val notifyAll: Boolean = true,
+    val parent: String? = null,
+    val linksTo: String? = null,
+    @SerialName("custom_fields")
+    val customFields: List<CustomField>? = null
+)
+
 
 /**
  * Data class for custom field
@@ -52,12 +69,17 @@ data class CustomField(
     val value: String
 )
 
+@Serializable
+data class AssigneesUpdate(
+    val add: List<Int>? = null,
+    val rem: List<Int>? = null
+)
 /**
  * Convert task to task data
  * @receiver Task
  * @return Task data
  */
-fun Task.toTaskData(): TaskData = TaskData(
+fun Task.toTaskData(): UpdateTaskData = UpdateTaskData(
     name = name,
     description = description,
     dueDate = dueDate!!,

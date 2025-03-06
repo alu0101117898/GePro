@@ -27,8 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,7 +42,6 @@ fun CommentItem(
     onDelete: (data.Comment) -> Unit,
 ) {
     var hovered by remember { mutableStateOf(false) }
-
     val hoverModifier = Modifier.onPointerEvent(
         PointerEventType.Move
     ) {
@@ -58,7 +55,7 @@ fun CommentItem(
 
     val initials = comment.user?.initials?.uppercase()
     val userName = comment.user?.username
-    val dateLong = comment.date.toLong()
+    val dateLong = comment.date
     val localDateTime = Instant.fromEpochMilliseconds(dateLong).toLocalDateTime(TimeZone.currentSystemDefault())
     val dateText = "${localDateTime.hour}:${localDateTime.minute} - ${localDateTime.dayOfMonth}/${localDateTime.monthNumber}"
 
@@ -84,9 +81,7 @@ fun CommentItem(
                     )
                 }
             }
-
             Spacer(modifier = Modifier.width(8.dp))
-
             Column(modifier = Modifier.weight(1f)) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -104,9 +99,7 @@ fun CommentItem(
                         style = MaterialTheme.typography.caption.copy(color = Color.Gray)
                     )
                 }
-
                 Spacer(modifier = Modifier.height(4.dp))
-
                 Text(
                     text = comment.comment_text,
                     style = MaterialTheme.typography.body2.copy(color = Color.Black)

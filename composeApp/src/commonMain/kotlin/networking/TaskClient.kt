@@ -1,6 +1,7 @@
 package networking
 
-import data.TaskData
+import data.CreateTaskData
+import data.UpdateTaskData
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -22,36 +23,14 @@ import util.jsonConfig
 const val token = "pk_152464594_FXIX0YM863JKD5OEPTXXGZDPJKAPQGDI"
 
 class TaskFunction(private val httpClient: HttpClient) {
-
-    suspend fun getTask(taskId: String): Result<String, NetworkError> {
-        return try {
-            val response = httpClient.get("https://api.clickup.com/api/v2/task/$taskId") {
-                header(HttpHeaders.Authorization, token)
-                header(HttpHeaders.ContentType, ContentType.Application.Json)
-            }
-            if (response.status.isSuccess()) {
-                val taskData: String = response.body()
-                Result.Success(taskData)
-            } else {
-                when (response.status.value) {
-                    404 -> Result.Error(NetworkError.NOT_FOUND)
-                    401 -> Result.Error(NetworkError.UNAUTHORIZED)
-                    429 -> Result.Error(NetworkError.TOO_MANY_REQUESTS)
-                    else -> Result.Error(NetworkError.UNKNOWN)
-                }
-            }
-        } catch (e: Exception) {
-            Result.Error(NetworkError.UNKNOWN)
-        }
-    }
-    suspend fun createTask(listId: String, taskData: TaskData): Result<String, NetworkError> {
+    suspend fun createTask(listId: String, createTaskData: CreateTaskData): Result<String, NetworkError> {
         return try {
             println("Intentando crear tarea en ClickUp. listId: $listId")
 
             val response: HttpResponse = httpClient.post("https://api.clickup.com/api/v2/list/$listId/task") {
                 header(HttpHeaders.Authorization, token)
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
-                setBody(jsonConfig.encodeToString(taskData))
+                setBody(jsonConfig.encodeToString(createTaskData))
             }
 
             if (response.status.isSuccess()) {
@@ -75,12 +54,12 @@ class TaskFunction(private val httpClient: HttpClient) {
     }
 
 
-    suspend fun updateTask(taskId: String, taskData: TaskData): Result<String, NetworkError> {
+    suspend fun updateTask(taskId: String, updateTaskData: UpdateTaskData): Result<String, NetworkError> {
         return try {
             val response: HttpResponse = httpClient.put("https://api.clickup.com/api/v2/task/$taskId") {
                 header(HttpHeaders.Authorization, token)
                 contentType(ContentType.Application.Json)
-                setBody(jsonConfig.encodeToString(taskData))
+                setBody(jsonConfig.encodeToString(updateTaskData))
             }
             if (response.status.isSuccess()) {
                 val responseData: String = response.body()

@@ -50,12 +50,13 @@ fun SpacesView(
     onSpaceDeleted: (Space) -> Unit = {}
 ) {
     var spaces by remember { mutableStateOf<List<Space>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
+    var listId by remember { mutableStateOf<String?>(null) }
     var errorMessage by remember { mutableStateOf("") }
+
+    var isLoading by remember { mutableStateOf(true) }
     var showCreateErrorDialog by remember { mutableStateOf(false) }
     var showCreateDialog by remember { mutableStateOf(false) }
 
-    var listId by remember { mutableStateOf<String?>(null) }
     var editingSpace by remember { mutableStateOf<Space?>(null) }
     var editedName by remember { mutableStateOf("") }
     var deletingSpace by remember { mutableStateOf<Space?>(null) }
@@ -134,8 +135,6 @@ fun SpacesView(
                         showCreateDialog = true
                     }
                 },
-                onViewProjectStatus = { /* Placeholder */ },
-                onDelayedTasks = { /* Placeholder */ }
             )
 
             Column(
@@ -162,6 +161,8 @@ fun SpacesView(
                             },
                             onLoadTasks = onLoadTasks,
                             listId = listId.toString(),
+                            teamId = teamId
+
                         )
                         Spacer(modifier = Modifier.padding(top = 8.dp))
                     }

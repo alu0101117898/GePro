@@ -2,6 +2,7 @@ package screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
@@ -24,13 +25,21 @@ fun RoleSelectionView(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        Button(onClick = {
+            selectedRole = "observer"
+            onRoleSelected("observer")
+        }) {
+            Text("Observador")
+        }
+        Spacer(modifier = Modifier.padding(16.dp))
         Button(onClick = {
             selectedRole = "admin"
             onRoleSelected("admin")
         }) {
             Text("Administrador")
         }
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(16.dp))
+        Spacer(modifier = Modifier.padding(16.dp))
         Button(onClick = {
             selectedRole = "resource"
             onRoleSelected("resource")

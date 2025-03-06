@@ -1,5 +1,8 @@
 package util.functions.space
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -16,10 +19,16 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.datetime.Clock
@@ -28,6 +37,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import model.task.Task
 
+
 @Composable
 fun SpaceStatusDialog(
     tasks: List<Task>,
@@ -35,7 +45,18 @@ fun SpaceStatusDialog(
     spaceName: String
 ) {
     val currentDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val animationProgress = remember { mutableStateOf(0f) }
 
+    val animatedProgress by animateFloatAsState(
+        targetValue = animationProgress.value,
+        animationSpec = tween(
+            durationMillis = 1200,
+            easing = FastOutSlowInEasing
+        )
+    )
+    LaunchedEffect(Unit) {
+        animationProgress.value = 1f
+    }
     val chartData = mapOf(
         "Retrasadas" to Pair(
             tasks.count { task ->
@@ -67,7 +88,16 @@ fun SpaceStatusDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Estado de $spaceName", style = MaterialTheme.typography.h6) },
+        title = {
+            Text(
+                "Estado de $spaceName",
+                style = MaterialTheme.typography.h6.copy(
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
         text = {
             Column(
                 modifier = Modifier
@@ -75,16 +105,19 @@ fun SpaceStatusDialog(
                     .heightIn(min = 200.dp, max = 400.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Total tareas: ${tasks.size}",
+                Text(
+                    "Total tareas: ${tasks.size}",
                     style = MaterialTheme.typography.subtitle1,
-                    modifier = Modifier.padding(bottom = 8.dp))
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    PieChart(
+                    AnimatedPieChart(
                         data = chartData,
+                        progress = animatedProgress,
                         modifier = Modifier.size(150.dp)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
@@ -104,25 +137,28 @@ fun SpaceStatusDialog(
 }
 
 @Composable
-private fun PieChart(
-    data: Map<String, Pair<Int, Color>>, // Tipo correcto
+private fun AnimatedPieChart(
+    data: Map<String, Pair<Int, Color>>,
+    progress: Float,
     modifier: Modifier = Modifier
 ) {
     val total = data.values.sumOf { it.first.toDouble() }
-    var startAngle = -90f
+    var currentStartAngle = -90f
 
     Canvas(modifier = modifier.size(150.dp)) {
         data.forEach { (_, value) ->
-            if (value.first > 0) {
-                val sweepAngle = (value.first / total * 360).toFloat()
+            if (value.first > 0 && total > 0) {
+                val fullSweep = (value.first / total * 360).toFloat()
+                val animatedSweep = fullSweep * progress
+
                 drawArc(
                     color = value.second,
-                    startAngle = startAngle,
-                    sweepAngle = sweepAngle,
+                    startAngle = currentStartAngle + (fullSweep * (1 - progress)),
+                    sweepAngle = animatedSweep,
                     useCenter = true,
                     size = Size(size.width, size.height)
                 )
-                startAngle += sweepAngle
+                currentStartAngle += fullSweep
             }
         }
     }
@@ -139,12 +175,16 @@ private fun ChartLegend(data: Map<String, Pair<Int, Color>>) {
                 Box(
                     modifier = Modifier
                         .size(16.dp)
-                        .background(value.second))
+                        .background(value.second)
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "$label: ${value.first}",
-                    style = MaterialTheme.typography.caption,
-                    fontSize = 12.sp)
+                    style = MaterialTheme.typography.caption.copy(
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f)
+                    )
+                )
             }
         }
     }

@@ -119,7 +119,7 @@ data class Status(
  */
 @Serializable
 data class User(
-    val id: Long,
+    val id: Int,
     val username: String,
     val color: String? = null,
     val initials: String? = null,
@@ -189,26 +189,6 @@ data class Priority(
     val priority: String? = null,
     val color: String? = null,
     val orderindex: String? = null
-)
-
-
-/**
- * Represents a task custom field.
- * @param id The custom field ID.
- * @param name The custom field name.
- * @param type The custom field type.
- * @param value The custom field value.
- * @param options The custom field options.
- * @param orderindex The custom field order index.
- */
-@Serializable
-data class CustomField(
-    val id: String? = null,
-    val name: String? = null,
-    val type: String? = null,
-    val value: String? = null,
-    val options: List<String>? = null,
-    val orderindex: Int? = null
 )
 
 /**

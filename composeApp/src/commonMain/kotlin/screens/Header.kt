@@ -1,6 +1,5 @@
 package screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,7 +13,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -25,9 +23,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun AdminHeader(
     userName: String,
-    onCreateProject: () -> Unit = {},
-    onViewProjectStatus: () -> Unit = {},
-    onDelayedTasks: () -> Unit = {}
+    onCreateProject: () -> Unit = {}
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
     var buttonPosition by remember { mutableStateOf(DpOffset.Zero) }
@@ -68,18 +64,6 @@ fun AdminHeader(
                 onCreateProject()
             }) {
                 Text("Crear proyecto")
-            }
-            DropdownMenuItem(onClick = {
-                menuExpanded = false
-                onViewProjectStatus()
-            }) {
-                Text("Ver estado del proyecto")
-            }
-            DropdownMenuItem(onClick = {
-                menuExpanded = false
-                onDelayedTasks()
-            }) {
-                Text("Tareas retrasadas")
             }
         }
     }

@@ -1,15 +1,20 @@
 package util.functions.task
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
@@ -30,9 +35,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import controller.TaskController
-import data.TaskData
+import data.UpdateTaskData
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -40,28 +48,32 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import model.task.Task
+import model.user.toTaskUser
+import util.createAssigneesUpdate
 import util.errorhandling.Result
 import util.functions.date.DatePickerDialog
+import util.parseColor
 
 @Composable
 fun TaskEditDialog(
     task: Task,
+    teamMembers: List<model.User>,
     taskController: TaskController,
     onDismiss: () -> Unit,
     onSave: (Task) -> Unit
 ) {
     var name by remember { mutableStateOf(task.name) }
     var description by remember { mutableStateOf(task.description ?: "") }
-
     val initialDue = task.dueDate?.let { Instant.fromEpochMilliseconds(it) } ?: Clock.System.now()
     val dueDate by remember { mutableStateOf(initialDue) }
     var dueDateTimestamp by remember { mutableStateOf(task.dueDate) }
-    var showDatePicker by remember { mutableStateOf(false) }
+    var selectedAssignee by remember { mutableStateOf(task.assignees?.firstOrNull()) }
 
     var status by remember { mutableStateOf(task.status?.status ?: "to do") }
     var showStatusDropdown by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showUserDropdown by remember { mutableStateOf(false) }
 
-    var showCompletionMessage by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     AlertDialog(
@@ -84,7 +96,60 @@ fun TaskEditDialog(
                         .heightIn(min = 100.dp),
                     maxLines = 5
                 )
-
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showUserDropdown = true }
+                        .padding(vertical = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("👤", fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Asignado: " + (selectedAssignee?.username ?: "Sin asignar"),
+                                style = MaterialTheme.typography.body1
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    DropdownMenu(expanded = showUserDropdown, onDismissRequest = { showUserDropdown = false }) {
+                        teamMembers.forEach { user ->
+                            val defaultColor = if (user.color.isNullOrEmpty()) "#000000" else user.color
+                            DropdownMenuItem(onClick = {
+                                selectedAssignee = user.toTaskUser()
+                                showUserDropdown = false
+                            }) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .clip(CircleShape)
+                                            .background(parseColor(defaultColor)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = user.initials,
+                                            style = MaterialTheme.typography.caption,
+                                            color = Color.White
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(text = user.username, style = MaterialTheme.typography.body2)
+                                }
+                            }
+                        }
+                    }
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -149,20 +214,19 @@ fun TaskEditDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    val taskData = TaskData(
+                    val updateTaskData = UpdateTaskData(
                         name = name,
                         description = description,
                         dueDate = dueDateTimestamp ?: 0,
-                        status = status
+                        status = status,
+                        assignees = createAssigneesUpdate(task.assignees?.firstOrNull(), selectedAssignee)
+
                     )
                     coroutineScope.launch {
                         task.id?.let { taskId ->
-                            taskController.updateTask(taskId, taskData) { result ->
+                            taskController.updateTask(taskId, updateTaskData) { result ->
                                 if (result is Result.Success) {
                                     onSave(result.data)
-                                    if (status == "complete") {
-                                        showCompletionMessage = true
-                                    }
                                 } else if (result is Result.Error) {
                                     println("Error al actualizar la tarea: ${result.error}")
                                 }
@@ -181,17 +245,4 @@ fun TaskEditDialog(
             }
         }
     )
-
-    if (showCompletionMessage) {
-        AlertDialog(
-            onDismissRequest = { showCompletionMessage = false },
-            title = { Text("Tarea completada") },
-            text = { Text("¡La tarea '$name' ha sido completada!") },
-            confirmButton = {
-                TextButton(onClick = { showCompletionMessage = false }) {
-                    Text("Aceptar")
-                }
-            }
-        )
-    }
 }

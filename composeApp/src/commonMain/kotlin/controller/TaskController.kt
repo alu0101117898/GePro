@@ -1,26 +1,27 @@
 package controller
 
+import data.CreateTaskData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import repository.TaskRepository
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
-import data.TaskData
+import data.UpdateTaskData
 import model.task.Task
 
 class TaskController(private val scope: CoroutineScope) {
 
-    fun createTask(listId: String, taskData: TaskData, onResult: (Result<Task, NetworkError>) -> Unit) {
+    fun createTask(listId: String, createTaskData: CreateTaskData, onResult: (Result<Task, NetworkError>) -> Unit) {
         scope.launch {
-            val result = TaskRepository.createTask(listId, taskData)
+            val result = TaskRepository.createTask(listId, createTaskData)
             onResult(result)
         }
     }
 
 
-    fun updateTask(taskId: String, taskData: TaskData, onResult: (Result<Task, NetworkError>) -> Unit) {
+    fun updateTask(taskId: String, updateTaskData: UpdateTaskData, onResult: (Result<Task, NetworkError>) -> Unit) {
         scope.launch {
-            val result = TaskRepository.updateTask(taskId, taskData)
+            val result = TaskRepository.updateTask(taskId, updateTaskData)
             onResult(result)
         }
     }
