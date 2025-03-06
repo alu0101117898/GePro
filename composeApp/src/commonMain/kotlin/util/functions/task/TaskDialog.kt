@@ -146,10 +146,18 @@ fun TaskDialog(
                     )
                     coroutineScope.launch {
                         taskController.createTask(listId, taskData) { result ->
-                            if (result is Result.Success) {
-                                onConfirm(result.data)
-                            } else if (result is Result.Error) {
-                                println("Error al crear la tarea: ${result.error}")
+                            when (result) {
+                                is Result.Success -> {
+                                    onConfirm(result.data)
+                                    onDismiss()
+                                }
+                                is Result.Error -> {
+                                    println("Error al crear la tarea: ${result.error}")
+                                }
+
+                                Result.Loading -> {
+                                    println("Cargando...")
+                                }
                             }
                         }
                     }

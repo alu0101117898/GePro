@@ -134,8 +134,6 @@ fun SpacesView(
                         showCreateDialog = true
                     }
                 },
-                onViewProjectStatus = { /* Placeholder */ },
-                onDelayedTasks = { /* Placeholder */ }
             )
 
             Column(

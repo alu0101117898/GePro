@@ -27,8 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,7 +56,7 @@ fun CommentItem(
 
     val initials = comment.user?.initials?.uppercase()
     val userName = comment.user?.username
-    val dateLong = comment.date.toLong()
+    val dateLong = comment.date
     val localDateTime = Instant.fromEpochMilliseconds(dateLong).toLocalDateTime(TimeZone.currentSystemDefault())
     val dateText = "${localDateTime.hour}:${localDateTime.minute} - ${localDateTime.dayOfMonth}/${localDateTime.monthNumber}"
 
