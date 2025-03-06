@@ -20,7 +20,11 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -51,6 +55,7 @@ fun SpaceItem(
     var tasks by remember { mutableStateOf<List<Task>>(emptyList()) }
     var taskToEdit by remember { mutableStateOf<Task?>(null) }
     var showPopup by remember { mutableStateOf(false) }
+    var showStateDialog by remember { mutableStateOf(false) }
     var clickOffset by remember { mutableStateOf(Offset.Zero) }
 
     Box(
@@ -152,6 +157,12 @@ fun SpaceItem(
                         }) {
                             Text("Borrar", color = Color.Red)
                         }
+                        TextButton(onClick = {
+                            showPopup = false
+                            showStateDialog = true
+                        }) {
+                            Text("Estado", color = Color.Red)
+                        }
                     }
                 }
             }
@@ -172,6 +183,14 @@ fun SpaceItem(
                     taskToEdit = null
                 },
                 taskController = taskController
+            )
+        }
+
+        if (showStateDialog) {
+            SpaceStatusDialog(
+                spaceName = space.name,
+                tasks = tasks,
+                onDismiss = { showStateDialog = false }
             )
         }
     }

@@ -126,7 +126,7 @@ class TaskFunction(private val httpClient: HttpClient) {
 
     suspend fun getTasks(listId: String): Result<String, NetworkError> {
         return try {
-            val response = httpClient.get("https://api.clickup.com/api/v2/list/$listId/task") {
+            val response = httpClient.get("https://api.clickup.com/api/v2/list/$listId/task?include_closed=true&Key:statuses[]=complete") {
                 header(HttpHeaders.Authorization, token)
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
             }
