@@ -1,4 +1,4 @@
-package util.functions.task
+package util.functions.task.admin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -146,7 +146,6 @@ fun TaskListItem(
                         }
                     }
                 }
-                // Resto del código (status, descripción, etc.)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(top = 6.dp)
@@ -208,7 +207,6 @@ fun TaskListItem(
                 }
             }
 
-            // Resto del código (botones de acciones y fecha)
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier

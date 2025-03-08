@@ -1,4 +1,4 @@
-package view
+package view.admin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

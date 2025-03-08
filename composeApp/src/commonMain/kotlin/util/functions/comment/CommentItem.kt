@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import util.parseColor
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -67,10 +69,12 @@ fun CommentItem(
         backgroundColor = Color.White
     ) {
         Row(modifier = Modifier.padding(8.dp)) {
+            val defaultColor = if (comment.user?.color.isNullOrEmpty()) "#000000" else comment.user?.color
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .background(Color(0xFF7C4DFF), shape = CircleShape),
+                    .clip(CircleShape)
+                    .background(parseColor(defaultColor.toString())),
                 contentAlignment = Alignment.Center
             ) {
                 if (initials != null) {

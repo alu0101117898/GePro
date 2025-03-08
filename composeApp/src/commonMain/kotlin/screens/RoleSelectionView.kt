@@ -16,8 +16,6 @@ import androidx.compose.ui.unit.dp
 fun RoleSelectionView(
     onRoleSelected: (String) -> Unit
 ) {
-    var selectedRole by remember { mutableStateOf<String?>(null) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -27,32 +25,21 @@ fun RoleSelectionView(
     ) {
 
         Button(onClick = {
-            selectedRole = "observer"
             onRoleSelected("observer")
         }) {
             Text("Observador")
         }
         Spacer(modifier = Modifier.padding(16.dp))
         Button(onClick = {
-            selectedRole = "admin"
             onRoleSelected("admin")
         }) {
             Text("Administrador")
         }
         Spacer(modifier = Modifier.padding(16.dp))
         Button(onClick = {
-            selectedRole = "resource"
             onRoleSelected("resource")
         }) {
             Text("Recurso")
-        }
-
-        selectedRole?.let { role ->
-            val message = if (role == "admin") "Eres admin" else "Eres recurso"
-            Text(
-                text = message,
-                modifier = Modifier.padding(top = 24.dp)
-            )
         }
     }
 }

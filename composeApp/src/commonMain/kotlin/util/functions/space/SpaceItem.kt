@@ -23,9 +23,9 @@ import model.task.Task
 import repository.TeamRepository
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
-import util.functions.task.TaskDialog
-import util.functions.task.TaskEditDialog
-import util.functions.task.TaskListForSpace
+import util.functions.task.admin.TaskDialog
+import util.functions.task.admin.TaskEditDialog
+import util.functions.task.admin.TaskListForSpace
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

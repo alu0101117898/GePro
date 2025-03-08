@@ -28,6 +28,7 @@ media3CommonKtx = "1.5.1"
 foundationLayoutAndroid = "1.7.8"
 uiAndroid = "1.7.8"
 securityCryptoKtx = "1.0.0"
+transportApi = "4.0.0"
 
 [libraries]
 
@@ -54,6 +55,7 @@ androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-
 androidx-foundation-layout-android = { group = "androidx.compose.foundation", name = "foundation-layout-android", version.ref = "foundationLayoutAndroid" }
 androidx-ui-android = { group = "androidx.compose.ui", name = "ui-android", version.ref = "uiAndroid" }
 androidx-security-crypto-ktx = { group = "androidx.security", name = "security-crypto-ktx", version.ref = "securityCryptoKtx" }
+transport-api = { group = "com.google.android.datatransport", name = "transport-api", version.ref = "transportApi" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

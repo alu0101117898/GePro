@@ -135,6 +135,7 @@ dependencies {
     implementation(libs.androidx.foundation.layout.android)
     implementation(libs.androidx.ui.android)
     implementation(libs.androidx.security.crypto.ktx)
+    implementation(libs.transport.api)
 }
 
 compose.desktop {

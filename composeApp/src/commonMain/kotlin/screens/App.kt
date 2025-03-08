@@ -14,8 +14,10 @@ import controller.TaskController
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import repository.TeamRepository
 import util.errorhandling.Result
-import view.SpacesView
+import view.admin.SpacesView
 import controller.UsernameController
+import data.UserInfo
+import view.resource.ResourceSpacesView
 
 @Composable
 @Preview
@@ -23,15 +25,16 @@ fun App() {
     var currentScreen by remember { mutableStateOf("roleSelection") }
     var userRole by remember { mutableStateOf<String?>(null) }
     var teamId by remember { mutableStateOf<String?>(null) }
-    var username by remember { mutableStateOf<String?>(null) }
+    var username by remember { mutableStateOf<UserInfo?>(null) }
     val space = rememberCoroutineScope()
 
     val usernameController = remember { UsernameController(space) }
 
 
     LaunchedEffect(Unit) {
-        usernameController.getUsername { result ->
+        usernameController.getUserInfo { result ->
             if (result is Result.Success) {
+                println("Username: ${result.data}")
                 username = result.data
             }
         }
@@ -48,14 +51,15 @@ fun App() {
         "roleSelection" -> {
             RoleSelectionView { role ->
                 userRole = role
-                currentScreen = if (role == "admin") {
-                    "spaces"
-                } else {
-                    "resourceHome"
+                currentScreen = when (role) {
+                    "admin" -> "adminHome"
+                    "observer" -> "observerHome"
+                    "resource" -> "resourceHome"
+                    else -> "resourceHome"
                 }
             }
         }
-        "spaces" -> {
+        "adminHome" -> {
             if (teamId == null) {
                 Text("Cargando información del equipo...")
             } else {
@@ -68,13 +72,30 @@ fun App() {
                     taskController = taskController,
                     teamId = teamId!!,
                     onBack = { currentScreen = "roleSelection" },
-                    userName = username ?: "Usuario"
+                    userName = username?.formattedUsername ?: "Usuario"
 
                 )
             }
         }
         "resourceHome" -> {
-            Text("Pantalla para recursos aún no implementada.")
+            if (teamId == null) {
+                Text("Cargando información del equipo...")
+            } else {
+                val spaceController = remember { SpaceController(space) }
+                val listController = remember { ListController(space) }
+                val taskController = remember { TaskController(space) }
+                ResourceSpacesView(
+                    teamId = teamId!!,
+                    currentUserId = username!!.userDetails.id,
+                    spaceController = spaceController,
+                    listController = listController,
+                    taskController = taskController,
+                    onTaskStateChanged = {}
+                )
+            }
+        }
+        "observerHome" -> {
+            Text("Pantalla para observadores aún no implementada.")
         }
     }
 }

@@ -1,4 +1,4 @@
-package util.functions.task
+package util.functions.task.admin
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
