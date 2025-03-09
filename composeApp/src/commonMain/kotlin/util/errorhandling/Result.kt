@@ -8,7 +8,7 @@ sealed interface Result<out D, out E : Error> {
 
 inline fun <T, E : Error, R> Result<T, E>.map(map: (T) -> R): Result<R, E> {
     return when (this) {
-        is Result.Loading -> Result.Loading // Manejar Loading
+        is Result.Loading -> Result.Loading //
         is Result.Error -> Result.Error(error)
         is Result.Success -> Result.Success(map(data))
     }

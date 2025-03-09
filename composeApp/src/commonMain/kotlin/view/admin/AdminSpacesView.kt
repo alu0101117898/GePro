@@ -39,7 +39,7 @@ import controller.TaskController
 import util.errorhandling.NetworkError
 
 @Composable
-fun SpacesView(
+fun AdminSpacesView(
     spaceController: SpaceController,
     taskController: TaskController,
     listController: ListController,

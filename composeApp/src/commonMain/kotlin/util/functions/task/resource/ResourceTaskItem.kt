@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
@@ -48,11 +49,13 @@ import kotlinx.datetime.toLocalDateTime
 import model.task.Task
 import util.functions.comment.CommentDialog
 import util.errorhandling.Result
+import util.functions.comment.EditCommentDialog
 import util.functions.date.formatDate
 
 @Composable
 fun ResourceTaskItem(
     task: Task,
+    currentUserId: Int,
     taskController: TaskController,
     onTaskStateChanged: (Task) -> Unit
 ) {
@@ -61,6 +64,9 @@ fun ResourceTaskItem(
     var taskStatus by remember { mutableStateOf(task.status?.status ?: "to do") }
     val coroutineScope = rememberCoroutineScope()
     val commentController = remember { CommentController(coroutineScope) }
+    var editingComment by remember { mutableStateOf<data.Comment?>(null) }
+    var showPermissionErrorDialog by remember { mutableStateOf(false) }
+
 
     val currentDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     val dueLocalDate = task.dueDate?.let {
@@ -70,15 +76,13 @@ fun ResourceTaskItem(
     val isDelayed = dueLocalDate != null && dueLocalDate < currentDate && taskStatus != "complete"
     val isLastDay = dueLocalDate != null && dueLocalDate == currentDate && taskStatus != "complete"
 
-    // Determinar el color según el estado actual y las fechas
     val statusColor = when {
-        isDelayed -> Color(0xFFE57373) // Rojo para tareas retrasadas
-        isLastDay -> Color(0xFFFFD54F) // Amarillo para último día
+        isDelayed -> Color(0xFFE57373)
+        isLastDay -> Color(0xFFFFD54F)
         taskStatus == "complete" -> MaterialTheme.colors.primary.copy(alpha = 0.9f)
         else -> MaterialTheme.colors.secondary.copy(alpha = 0.9f)
     }
 
-    // Determinar el texto del estado
     val statusText = when {
         isDelayed -> "RETRASADA"
         isLastDay -> "ÚLTIMO DÍA!"
@@ -86,21 +90,16 @@ fun ResourceTaskItem(
         else -> "PENDIENTE"
     }
 
-    // Función para actualizar la tarea
     val updateTaskStatusAndUI = { newStatus: String ->
-        // Actualizar el estado local inmediatamente para cambiar la UI
         taskStatus = newStatus
 
-        // Luego actualizar en el backend
         val updatedTask = task.toTaskData().copy(status = newStatus)
         coroutineScope.launch {
             task.id?.let { taskId ->
                 taskController.updateTask(taskId, updatedTask) { result ->
                     if (result is Result.Success) {
-                        // Notificar al componente padre
                         onTaskStateChanged(result.data)
                     } else {
-                        // Si hay error, revertir al estado anterior
                         taskStatus = task.status?.status ?: "to do"
                     }
                 }
@@ -136,14 +135,13 @@ fun ResourceTaskItem(
             Spacer(modifier = Modifier.height(12.dp))
             task.description?.let { description ->
                 Text(
-                    text = description.ifEmpty { "No description provided" },
+                    text = description.ifEmpty { "" },
                     style = MaterialTheme.typography.body2.copy(
                         color = Color.White.copy(alpha = 0.9f),
                     ),
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -164,6 +162,7 @@ fun ResourceTaskItem(
                                 commentController.getComments(taskId) { result ->
                                     if (result is Result.Success) {
                                         comments = result.data
+                                        println("result.data: ${result.data}")
                                         showCommentsDialog = true
                                     } else {
                                         println("Error al obtener comentarios: $result")
@@ -200,15 +199,70 @@ fun ResourceTaskItem(
                     }
                 }
             },
-            onEditComment = { /* Implement edit logic */ },
+            onEditComment = { comment ->
+                if (currentUserId == comment.user?.id) {
+                    editingComment = comment
+                } else {
+                    showPermissionErrorDialog = true
+                }
+            },
             onDeleteComment = { comment ->
+                if (currentUserId == comment.user?.id) {
+                    coroutineScope.launch {
+                        commentController.deleteComment(comment.id) { result ->
+                            if (result is Result.Success) {
+                                comments = comments.filter { it.id != comment.id }
+                            } else {
+                                println("Error al eliminar comentario: $result")
+                            }
+                        }
+                    }
+                } else {
+                    showPermissionErrorDialog = true
+                }
+            }
+        )
+    }
+
+    if (showPermissionErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showPermissionErrorDialog = false },
+            title = { Text("Permiso denegado") },
+            text = { Text("No tiene permisos para borrar/editar otros comentarios") },
+            confirmButton = {
+                Button(
+                    onClick = { showPermissionErrorDialog = false }
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    val editingCommentId = editingComment?.id
+    if (editingCommentId != null) {
+        EditCommentDialog(
+            comment = editingComment!!,
+            onDismiss = { editingComment = null },
+            onConfirm = { newText ->
                 coroutineScope.launch {
-                    commentController.deleteComment(comment.id) { result ->
+                    val commentData = CommentUpdateData(comment_text = newText)
+                    commentController.updateComment(editingCommentId, commentData) { result ->
                         if (result is Result.Success) {
-                            comments = comments.filter { it.id != comment.id }
+                            val updatedComment = if (result.data.id.isEmpty()) {
+                                result.data.copy(id = editingCommentId)
+                            } else {
+                                result.data
+                            }
+                            comments = comments.map { comment ->
+                                if (comment.id == editingCommentId) updatedComment else comment
+                            }
+                        } else if (result is Result.Error) {
+                            println("Error al actualizar comentario: ${result.error}")
                         }
                     }
                 }
+                editingComment = null
             }
         )
     }
@@ -304,4 +358,3 @@ private fun ActionButtons(
         }
     }
 }
-

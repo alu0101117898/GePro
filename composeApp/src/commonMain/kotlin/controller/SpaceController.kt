@@ -10,7 +10,6 @@ import util.errorhandling.NetworkError
 import util.errorhandling.Result
 
 class SpaceController(private val scope: CoroutineScope) {
-
     fun getSpaces(teamId: String, onResult: (Result<List<Space>, NetworkError>) -> Unit) {
         scope.launch {
             val result = SpaceRepository.getSpaces(teamId)

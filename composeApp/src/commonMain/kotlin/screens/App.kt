@@ -14,9 +14,10 @@ import controller.TaskController
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import repository.TeamRepository
 import util.errorhandling.Result
-import view.admin.SpacesView
+import view.admin.AdminSpacesView
 import controller.UsernameController
 import data.UserInfo
+import view.observer.ObserverHome
 import view.resource.ResourceSpacesView
 
 @Composable
@@ -66,7 +67,7 @@ fun App() {
                 val spaceController = remember { SpaceController(space) }
                 val listController = remember { ListController(space) }
                 val taskController = remember { TaskController(space) }
-                SpacesView(
+                AdminSpacesView(
                     spaceController = spaceController,
                     listController = listController,
                     taskController = taskController,
@@ -90,12 +91,27 @@ fun App() {
                     spaceController = spaceController,
                     listController = listController,
                     taskController = taskController,
-                    onTaskStateChanged = {}
-                )
+                    onTaskStateChanged = {},
+                    onBack = { currentScreen = "roleSelection" },
+                    )
             }
         }
         "observerHome" -> {
-            Text("Pantalla para observadores aún no implementada.")
+            if (teamId == null) {
+                Text("Cargando información del equipo...")
+            } else {
+                val spaceController = remember { SpaceController(space) }
+                val listController = remember { ListController(space) }
+                val taskController = remember { TaskController(space) }
+                ObserverHome(
+                    teamId = teamId!!,
+                    spaceController = spaceController,
+                    listController = listController,
+                    taskController = taskController,
+                    onBack = { currentScreen = "roleSelection" },
+
+                )
+            }
         }
     }
 }

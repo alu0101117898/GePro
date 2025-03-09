@@ -381,7 +381,6 @@ fun TaskListItem(
             }
         )
     }
-
 }
 
 fun getStatusColor(status: Status?): Color {
