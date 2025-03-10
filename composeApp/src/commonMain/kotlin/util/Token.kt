@@ -1,3 +1,3 @@
 package util
 
-const val token = "pk_152464594_FXIX0YM863JKD5OEPTXXGZDPJKAPQGDI"
+const val token = "Inserta tu token privado de ClickUp aquí."
