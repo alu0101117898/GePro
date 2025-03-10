@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,10 +15,12 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,7 +40,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import model.task.Task
 
-
 @Composable
 fun SpaceStatusDialog(
     tasks: List<Task>,
@@ -47,6 +49,10 @@ fun SpaceStatusDialog(
     val currentDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     val animationProgress = remember { mutableStateOf(0f) }
 
+    val completedTasks = tasks.count { it.status?.status == "complete" }
+    val totalTasks = tasks.size
+    val completionRate = if (totalTasks > 0) completedTasks.toFloat() / totalTasks else 0f
+
     val animatedProgress by animateFloatAsState(
         targetValue = animationProgress.value,
         animationSpec = tween(
@@ -54,9 +60,19 @@ fun SpaceStatusDialog(
             easing = FastOutSlowInEasing
         )
     )
+
+    val animatedCompletionRate by animateFloatAsState(
+        targetValue = completionRate * animationProgress.value,
+        animationSpec = tween(
+            durationMillis = 1000,
+            easing = FastOutSlowInEasing
+        )
+    )
+
     LaunchedEffect(Unit) {
         animationProgress.value = 1f
     }
+
     val chartData = mapOf(
         "Retrasadas" to Pair(
             tasks.count { task ->
@@ -81,7 +97,7 @@ fun SpaceStatusDialog(
             Color(0xFFBDBDBD)
         ),
         "Completadas" to Pair(
-            tasks.count { it.status?.status == "complete" },
+            completedTasks,
             Color(0xFFA5D6A7)
         )
     )
@@ -110,6 +126,49 @@ fun SpaceStatusDialog(
                     style = MaterialTheme.typography.subtitle1,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
+
+                // Sección de Tasa de Finalización
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        "Tasa de finalización: ${(completionRate * 100).toInt()}%",
+                        style = MaterialTheme.typography.subtitle2.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+
+                    LinearProgressIndicator(
+                        progress = animatedCompletionRate,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp),
+                        color = Color(0xFF4CAF50),
+                        backgroundColor = Color(0xFFE0E0E0)
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "$completedTasks completadas",
+                            style = MaterialTheme.typography.caption
+                        )
+                        Text(
+                            "$totalTasks total",
+                            style = MaterialTheme.typography.caption
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

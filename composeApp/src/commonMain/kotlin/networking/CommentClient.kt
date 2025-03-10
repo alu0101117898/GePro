@@ -24,6 +24,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
 import util.jsonConfig
+import util.token
 
 class CommentClient(private val httpClient: HttpClient) {
     suspend fun getComments(taskId: String): Result<List<data.Comment>, NetworkError> {
@@ -46,7 +47,7 @@ class CommentClient(private val httpClient: HttpClient) {
                 val response: String = httpClient.get("https://api.clickup.com/api/v2/user") {
                     header(HttpHeaders.Authorization, token)
                 }.body()
-                val jsonResponse = util.jsonConfig.parseToJsonElement(response).jsonObject
+                val jsonResponse = jsonConfig.parseToJsonElement(response).jsonObject
                 val userJson = jsonResponse["user"]?.jsonObject
                 if (userJson != null) {
                     val id = userJson["id"]?.jsonPrimitive?.int ?: 0

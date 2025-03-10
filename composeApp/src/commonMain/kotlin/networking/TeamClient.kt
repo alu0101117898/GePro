@@ -9,6 +9,7 @@ import model.Team
 import kotlinx.serialization.Serializable
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
+import util.token
 
 
 class TeamClient(private val httpClient: HttpClient) {

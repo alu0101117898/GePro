@@ -12,6 +12,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
+import util.token
 
 class UsernameClient(private val httpClient: HttpClient) {
     suspend fun getUserInfo(): Result<UserInfo, NetworkError> {

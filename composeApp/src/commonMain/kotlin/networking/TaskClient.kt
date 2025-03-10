@@ -19,9 +19,7 @@ import kotlinx.serialization.encodeToString
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
 import util.jsonConfig
-
-const val token = "pk_152464594_FXIX0YM863JKD5OEPTXXGZDPJKAPQGDI"
-const val token2 = "pk_87811025_RT69J9EDO7Q7ANI8PH40KQLBIXXBLLG3"
+import util.token
 
 class TaskFunction(private val httpClient: HttpClient) {
     suspend fun createTask(listId: String, createTaskData: CreateTaskData): Result<String, NetworkError> {

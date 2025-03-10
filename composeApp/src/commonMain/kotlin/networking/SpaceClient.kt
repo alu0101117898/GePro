@@ -18,6 +18,7 @@ import kotlinx.serialization.json.Json
 import model.space.Space
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
+import util.token
 
 class SpaceClient(private val httpClient: HttpClient) {
 

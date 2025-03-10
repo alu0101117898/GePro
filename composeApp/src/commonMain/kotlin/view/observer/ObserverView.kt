@@ -3,7 +3,6 @@ package view.observer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
@@ -28,6 +27,7 @@ import model.task.Task
 import model.task.User
 import util.errorhandling.Result
 import util.functions.UserStatusDialog
+import util.functions.space.SpaceStatusDialog
 import util.parseColor
 
 @Composable
@@ -43,6 +43,7 @@ fun ObserverHome(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
     val listSpaceMap = remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    val spaceTasksMap = remember { mutableStateOf<Map<String, List<Task>>>(emptyMap()) }
 
     LaunchedEffect(teamId) {
         spaceController.getSpaces(teamId) { spaceResult ->
@@ -51,9 +52,13 @@ fun ObserverHome(
                     spaces = spaceResult.data
                     val tempListSpaceMap = mutableMapOf<String, String>()
                     val tempAllTasks = mutableListOf<Task>()
+                    val tempSpaceTasksMap = mutableMapOf<String, MutableList<Task>>()
                     var pendingLists = 0
                     var processedLists = 0
 
+                    spaces.forEach { space ->
+                        tempSpaceTasksMap[space.id] = mutableListOf()
+                    }
                     spaces.forEach { space ->
                         listController.getLists(space.id) { listResult ->
                             when (listResult) {
@@ -65,18 +70,19 @@ fun ObserverHome(
                                             when (taskResult) {
                                                 is Result.Success -> {
                                                     tempAllTasks.addAll(taskResult.data)
+                                                    val spaceId = space.id
+                                                    tempSpaceTasksMap[spaceId]?.addAll(taskResult.data)
                                                     processedLists++
-
                                                     if (processedLists == pendingLists) {
                                                         allTasks = tempAllTasks
                                                         listSpaceMap.value = tempListSpaceMap
+                                                        spaceTasksMap.value = tempSpaceTasksMap
                                                         isLoading = false
                                                     }
                                                 }
                                                 is Result.Error -> {
                                                     errorMessage = "Error cargando tareas: ${taskResult.error}"
                                                     processedLists++
-
                                                     if (processedLists == pendingLists) {
                                                         isLoading = false
                                                     }
@@ -94,8 +100,6 @@ fun ObserverHome(
                             }
                         }
                     }
-
-                    // Si no hay espacios, terminamos la carga
                     if (spaces.isEmpty()) {
                         isLoading = false
                     }
@@ -108,7 +112,6 @@ fun ObserverHome(
             }
         }
     }
-
     Box(modifier = Modifier.fillMaxSize()) {
         ObserverViewContent(
             isLoading = isLoading,
@@ -116,6 +119,7 @@ fun ObserverHome(
             allTasks = allTasks,
             spaces = spaces,
             listSpaceMap = listSpaceMap.value,
+            spaceTasksMap = spaceTasksMap.value
         )
         Button(
             onClick = onBack,
@@ -136,6 +140,7 @@ private fun ObserverViewContent(
     allTasks: List<Task>,
     spaces: List<Space>,
     listSpaceMap: Map<String, String>,
+    spaceTasksMap: Map<String, List<Task>>
 ) {
     Column(
         modifier = Modifier
@@ -151,14 +156,13 @@ private fun ObserverViewContent(
             errorMessage.isNotEmpty() -> Text(errorMessage, color = Color.Red)
             else -> {
                 println("Total de tareas cargadas: ${allTasks.size}")
-
                 val userTasks = allTasks
                     .filter { it.assignees?.isNotEmpty() == true }
                     .groupBy { it.assignees?.first() }
 
                 println("Usuarios con tareas: ${userTasks.keys.size}")
 
-                UserTasksOverview(userTasks, spaces, listSpaceMap)
+                UserTasksOverview(userTasks, spaces, listSpaceMap, spaceTasksMap)
             }
         }
         Spacer(modifier = Modifier.height(60.dp))
@@ -169,12 +173,18 @@ private fun ObserverViewContent(
 private fun UserTasksOverview(
     userTasks: Map<User?, List<Task>>,
     spaces: List<Space>,
-    listSpaceMap: Map<String, String>
+    listSpaceMap: Map<String, String>,
+    spaceTasksMap: Map<String, List<Task>>
 ) {
     Column {
         userTasks.forEach { (user, tasks) ->
             if (user != null) {
                 val tasksBySpace = mutableMapOf<String, MutableList<Task>>()
+                val spaceIdNameMap = mutableMapOf<String, String>()
+                spaces.forEach { space ->
+                    spaceIdNameMap[space.id] = space.name
+                }
+
                 tasks.forEach { task ->
                     val listId = task.list?.id
                     if (listId != null) {
@@ -182,6 +192,7 @@ private fun UserTasksOverview(
                         if (spaceId != null) {
                             val spaceName = spaces.find { it.id == spaceId }?.name ?: "Espacio desconocido"
                             tasksBySpace.getOrPut(spaceName) { mutableListOf() }.add(task)
+                            spaceIdNameMap[spaceId] = spaceName
                         } else {
                             tasksBySpace.getOrPut("Espacio desconocido") { mutableListOf() }.add(task)
                         }
@@ -189,8 +200,6 @@ private fun UserTasksOverview(
                         tasksBySpace.getOrPut("Sin lista asignada") { mutableListOf() }.add(task)
                     }
                 }
-
-                // Imprimir información de depuración
                 println("Usuario: ${user.username}")
                 tasksBySpace.forEach { (space, spaceTasks) ->
                     println("  - $space: ${spaceTasks.size} tareas")
@@ -200,6 +209,8 @@ private fun UserTasksOverview(
                     user = user,
                     tasksBySpace = tasksBySpace,
                     totalTasks = tasks.size,
+                    spaceTasksMap = spaceTasksMap,
+                    spaceIdNameMap = spaceIdNameMap,
                     tasks = tasks
                 )
 
@@ -214,7 +225,9 @@ private fun UserTaskSection(
     user: User,
     tasksBySpace: Map<String, List<Task>>,
     totalTasks: Int,
-    tasks: List<Task>
+    tasks: List<Task>,
+    spaceTasksMap: Map<String, List<Task>>,
+    spaceIdNameMap: Map<String, String>
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showContactDialog by remember { mutableStateOf(false) }
@@ -270,11 +283,15 @@ private fun UserTaskSection(
             AnimatedVisibility(visible = expanded) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Column {
-                    tasksBySpace.forEach { (spaceName, spaceTasks) ->
-                        if (spaceTasks.isNotEmpty()) {
+                    tasksBySpace.forEach { (spaceName, tasks) ->
+                        if (tasks.isNotEmpty()) {
+                            val spaceId = spaceIdNameMap.entries.find { it.value == spaceName }?.key
+                            val spaceTasks = if (spaceId != null) spaceTasksMap[spaceId] ?: emptyList() else emptyList()
+
                             SpaceSection(
                                 spaceName = spaceName,
-                                tasks = spaceTasks.sortedByStatus()
+                                tasks = tasks.sortedByStatus(),
+                                allSpaceTasks = spaceTasks
                             )
                         }
                     }
@@ -429,7 +446,9 @@ private fun formatDueDate(dueDate: LocalDate, currentDate: LocalDate): String {
 }
 
 @Composable
-private fun SpaceSection(spaceName: String, tasks: List<Task>) {
+private fun SpaceSection(spaceName: String, tasks: List<Task>, allSpaceTasks: List<Task>) {
+    var showStatusDialog by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -437,18 +456,42 @@ private fun SpaceSection(spaceName: String, tasks: List<Task>) {
         elevation = 2.dp
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(
-                text = spaceName,
-                style = MaterialTheme.typography.h6,
-                color = MaterialTheme.colors.primary,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = spaceName,
+                    style = MaterialTheme.typography.h6,
+                    color = MaterialTheme.colors.primary,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Button(
+                    onClick = { showStatusDialog = true },
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MaterialTheme.colors.secondary
+                    ),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    Text("Estado")
+                }
+            }
 
             tasks.forEach { task ->
                 ObserverTaskItem(task = task)
                 Spacer(modifier = Modifier.height(4.dp))
             }
         }
+    }
+
+    if (showStatusDialog) {
+        SpaceStatusDialog(
+            tasks = allSpaceTasks,
+            onDismiss = { showStatusDialog = false },
+            spaceName = spaceName
+        )
     }
 }
 
