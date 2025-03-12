@@ -40,7 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import controller.TaskController
-import data.CreateTaskData
+import model.task.CreateTaskData
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -48,6 +48,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import model.task.Task
+import model.team.User
 import model.user.toTaskUser
 import util.functions.date.DatePickerDialog
 import util.errorhandling.Result
@@ -58,7 +59,7 @@ fun TaskDialog(
     listId: String,
     taskController: TaskController,
     task: Task? = null,
-    teamMembers: List<model.User>,
+    teamMembers: List<User>,
     onDismiss: () -> Unit,
     onConfirm: (Task) -> Unit
 ) {

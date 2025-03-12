@@ -36,15 +36,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import controller.TaskController
-import data.CommentUpdateData
-import data.toTaskData
+import model.comment.CommentUpdateData
+import model.task.toTaskData
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import model.comment.Comment
 import model.task.Status
 import model.task.Task
+import model.team.User
 import util.errorhandling.Result
 import util.functions.comment.CommentDialog
 import util.functions.comment.EditCommentDialog
@@ -55,7 +57,7 @@ import util.parseColor
 @Composable
 fun TaskListItem(
     task: Task,
-    teamMembers: List<model.User>,
+    teamMembers: List<User>,
     taskController: TaskController,
     onTaskUpdated: (Task) -> Unit,
     onTaskDeleted: (Task) -> Unit,
@@ -65,8 +67,8 @@ fun TaskListItem(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showCommentsDialog by remember { mutableStateOf(false) }
     var showCompletionMessage by remember { mutableStateOf(false) }
-    var comments by remember { mutableStateOf<List<data.Comment>>(emptyList()) }
-    var editingComment by remember { mutableStateOf<data.Comment?>(null) }
+    var comments by remember { mutableStateOf<List<Comment>>(emptyList()) }
+    var editingComment by remember { mutableStateOf<Comment?>(null) }
 
     val currentDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     val dueLocalDate = task.dueDate?.let {

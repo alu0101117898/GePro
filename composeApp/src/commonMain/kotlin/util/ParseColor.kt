@@ -17,7 +17,7 @@ fun parseColor(colorHex: String): Color {
             blue = b.hexToInt()
         )
     } catch (e: Exception) {
-        Color.Black // Fallback a negro si hay error
+        Color.Black
     }
 }
 

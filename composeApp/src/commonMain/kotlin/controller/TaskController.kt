@@ -1,12 +1,12 @@
 package controller
 
-import data.CreateTaskData
+import model.task.CreateTaskData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import repository.TaskRepository
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
-import data.UpdateTaskData
+import model.task.UpdateTaskData
 import model.task.Task
 
 class TaskController(private val scope: CoroutineScope) {

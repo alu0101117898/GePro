@@ -88,7 +88,6 @@ fun DatePickerDialog(
                     }
                 }
 
-                // Calendario
                 CalendarGrid(
                     year = currentYear,
                     month = currentMonth,
@@ -126,7 +125,7 @@ private fun CalendarGrid(
 ) {
     val firstDayOfMonth = LocalDate(year, month, 1)
     val daysInMonth = firstDayOfMonth.daysInMonth()
-    val startDay = (firstDayOfMonth.dayOfWeek.ordinal + 6) % 7 // Lunes como primer día
+    val startDay = (firstDayOfMonth.dayOfWeek.ordinal + 6) % 7
 
     val daysOfWeek = listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
     val daysList = (1..daysInMonth).map { day ->
@@ -134,7 +133,6 @@ private fun CalendarGrid(
     }
 
     Column {
-        // Días de la semana
         Row(modifier = Modifier.fillMaxWidth()) {
             daysOfWeek.forEach { day ->
                 Text(
@@ -144,8 +142,6 @@ private fun CalendarGrid(
                 )
             }
         }
-
-        // Días del mes
         LazyVerticalGrid(
             columns = GridCells.Fixed(7),
             modifier = Modifier.height(200.dp)
@@ -173,7 +169,6 @@ private fun CalendarGrid(
     }
 }
 
-// Extensión para obtener días del mes
 fun LocalDate.daysInMonth(): Int {
     return when (month) {
         Month.FEBRUARY -> if (year % 4 == 0) 29 else 28

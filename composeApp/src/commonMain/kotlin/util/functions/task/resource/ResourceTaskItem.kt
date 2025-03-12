@@ -38,14 +38,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import controller.CommentController
 import controller.TaskController
-import data.CommentUpdateData
-import data.toTaskData
+import model.comment.CommentUpdateData
+import model.task.toTaskData
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import model.comment.Comment
 import model.task.Task
 import util.functions.comment.CommentDialog
 import util.errorhandling.Result
@@ -60,11 +61,11 @@ fun ResourceTaskItem(
     onTaskStateChanged: (Task) -> Unit
 ) {
     var showCommentsDialog by remember { mutableStateOf(false) }
-    var comments by remember { mutableStateOf(emptyList<data.Comment>()) }
+    var comments by remember { mutableStateOf(emptyList<Comment>()) }
     var taskStatus by remember { mutableStateOf(task.status?.status ?: "to do") }
     val coroutineScope = rememberCoroutineScope()
     val commentController = remember { CommentController(coroutineScope) }
-    var editingComment by remember { mutableStateOf<data.Comment?>(null) }
+    var editingComment by remember { mutableStateOf<Comment?>(null) }
     var showPermissionErrorDialog by remember { mutableStateOf(false) }
 
 

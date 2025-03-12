@@ -1,6 +1,6 @@
 package controller
 
-import data.SpaceData
+import model.space.SpaceData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import model.space.Space

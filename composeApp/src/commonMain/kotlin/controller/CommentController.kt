@@ -3,8 +3,8 @@ package controller
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import repository.CommentRepository
-import data.Comment
-import data.CommentUpdateData
+import model.comment.Comment
+import model.comment.CommentUpdateData
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
 

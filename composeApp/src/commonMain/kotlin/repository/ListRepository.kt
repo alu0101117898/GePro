@@ -1,6 +1,6 @@
 package repository
 
-import model.TaskList
+import model.list.TaskList
 import networking.ListClient
 import networking.createHttpClient
 import util.errorhandling.NetworkError

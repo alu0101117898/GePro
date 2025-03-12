@@ -11,13 +11,13 @@ import androidx.compose.runtime.setValue
 import controller.ListController
 import controller.SpaceController
 import controller.TaskController
+import controller.TeamController
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import repository.TeamRepository
 import util.errorhandling.Result
 import view.admin.AdminSpacesView
 import controller.UsernameController
-import data.UserInfo
-import view.observer.ObserverHome
+import model.user.UserInfo
+import view.observer.ObserverView
 import view.resource.ResourceSpacesView
 
 @Composable
@@ -27,10 +27,17 @@ fun App() {
     var userRole by remember { mutableStateOf<String?>(null) }
     var teamId by remember { mutableStateOf<String?>(null) }
     var username by remember { mutableStateOf<UserInfo?>(null) }
-    val space = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
+    val usernameController = remember { UsernameController(scope) }
+    val teamController = remember { TeamController(scope) }
 
-    val usernameController = remember { UsernameController(space) }
-
+    LaunchedEffect(Unit) {
+        teamController.getTeams { result ->
+            if (result is Result.Success && result.data.isNotEmpty()) {
+                teamId = result.data.first().id
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         usernameController.getUserInfo { result ->
@@ -38,13 +45,6 @@ fun App() {
                 println("Username: ${result.data}")
                 username = result.data
             }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        val result = TeamRepository.getTeams()
-        if (result is Result.Success && result.data.isNotEmpty()) {
-            teamId = result.data.first().id
         }
     }
 
@@ -64,9 +64,9 @@ fun App() {
             if (teamId == null) {
                 Text("Cargando información del equipo...")
             } else {
-                val spaceController = remember { SpaceController(space) }
-                val listController = remember { ListController(space) }
-                val taskController = remember { TaskController(space) }
+                val spaceController = remember { SpaceController(scope) }
+                val listController = remember { ListController(scope) }
+                val taskController = remember { TaskController(scope) }
                 AdminSpacesView(
                     spaceController = spaceController,
                     listController = listController,
@@ -82,9 +82,9 @@ fun App() {
             if (teamId == null) {
                 Text("Cargando información del equipo...")
             } else {
-                val spaceController = remember { SpaceController(space) }
-                val listController = remember { ListController(space) }
-                val taskController = remember { TaskController(space) }
+                val spaceController = remember { SpaceController(scope) }
+                val listController = remember { ListController(scope) }
+                val taskController = remember { TaskController(scope) }
                 ResourceSpacesView(
                     teamId = teamId!!,
                     currentUserId = username!!.userDetails.id,
@@ -100,10 +100,10 @@ fun App() {
             if (teamId == null) {
                 Text("Cargando información del equipo...")
             } else {
-                val spaceController = remember { SpaceController(space) }
-                val listController = remember { ListController(space) }
-                val taskController = remember { TaskController(space) }
-                ObserverHome(
+                val spaceController = remember { SpaceController(scope) }
+                val listController = remember { ListController(scope) }
+                val taskController = remember { TaskController(scope) }
+                ObserverView(
                     teamId = teamId!!,
                     spaceController = spaceController,
                     listController = listController,

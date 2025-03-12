@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import controller.TaskController
 import model.task.Task
+import model.team.User
 
 
 @Composable
@@ -20,7 +21,7 @@ fun TaskListForSpace(
     taskController: TaskController,
     onTaskUpdated: (Task) -> Unit,
     onTaskDeleted: (Task) -> Unit,
-    teamMembers: List<model.User>
+    teamMembers: List<User>
 ) {
 
     if (tasks.isNotEmpty()) {

@@ -1,7 +1,7 @@
 package networking
 
-import data.UserDetails
-import data.UserInfo
+import model.user.UserDetails
+import model.user.UserInfo
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get

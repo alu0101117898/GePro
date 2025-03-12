@@ -2,7 +2,7 @@ package controller
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import model.TaskList
+import model.list.TaskList
 import repository.ListRepository
 import util.errorhandling.NetworkError
 import util.errorhandling.Result

@@ -1,6 +1,6 @@
 package controller
 
-import data.UserInfo
+import model.user.UserInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import repository.UsernameRepository

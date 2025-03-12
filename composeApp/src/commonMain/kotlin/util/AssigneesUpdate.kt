@@ -1,6 +1,6 @@
 package util
 
-import data.AssigneesUpdate
+import model.task.AssigneesUpdate
 
 fun createAssigneesUpdate(currentAssignee: model.task.User?, newAssignee: model.task.User?): AssigneesUpdate? {
     val currentAssigneeId = currentAssignee?.id

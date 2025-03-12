@@ -1,3 +1,0 @@
-package util
-
-const val token = "pk_152464594_FXIX0YM863JKD5OEPTXXGZDPJKAPQGDI"

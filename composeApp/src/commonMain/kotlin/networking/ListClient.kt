@@ -9,7 +9,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpHeaders.ContentType
 import io.ktor.http.isSuccess
-import model.TaskList
+import model.list.TaskList
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import util.errorhandling.NetworkError

@@ -5,15 +5,13 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
-import model.Team
+import model.team.Team
 import kotlinx.serialization.Serializable
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
 import util.token
 
-
 class TeamClient(private val httpClient: HttpClient) {
-
     suspend fun getTeams(): Result<List<Team>, NetworkError> {
         return try {
             val response = httpClient.get("https://api.clickup.com/api/v2/team") {

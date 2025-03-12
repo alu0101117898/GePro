@@ -40,7 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import controller.TaskController
-import data.UpdateTaskData
+import model.task.UpdateTaskData
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -48,6 +48,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import model.task.Task
+import model.team.User
 import model.user.toTaskUser
 import util.createAssigneesUpdate
 import util.errorhandling.Result
@@ -57,7 +58,7 @@ import util.parseColor
 @Composable
 fun TaskEditDialog(
     task: Task,
-    teamMembers: List<model.User>,
+    teamMembers: List<User>,
     taskController: TaskController,
     onDismiss: () -> Unit,
     onSave: (Task) -> Unit

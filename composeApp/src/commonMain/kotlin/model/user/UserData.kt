@@ -1,4 +1,4 @@
-package data
+package model.user
 
 import kotlinx.serialization.Serializable
 

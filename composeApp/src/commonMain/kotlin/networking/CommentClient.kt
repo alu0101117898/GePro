@@ -1,7 +1,7 @@
 package networking
 
-import data.CommentUpdateData
-import data.CommentUser
+import model.comment.CommentUpdateData
+import model.comment.CommentUser
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -21,19 +21,21 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import model.comment.Comment
+import model.comment.CommentsResponse
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
 import util.jsonConfig
 import util.token
 
 class CommentClient(private val httpClient: HttpClient) {
-    suspend fun getComments(taskId: String): Result<List<data.Comment>, NetworkError> {
+    suspend fun getComments(taskId: String): Result<List<Comment>, NetworkError> {
         return try {
             val response = httpClient.get("https://api.clickup.com/api/v2/task/$taskId/comment") {
                 header(HttpHeaders.Authorization, token)
             }
             val responseBody: String = response.body()
-            val commentsResponse = jsonConfig.decodeFromString<data.CommentsResponse>(responseBody)
+            val commentsResponse = jsonConfig.decodeFromString<CommentsResponse>(responseBody)
             Result.Success(commentsResponse.comments)
         } catch (e: Exception) {
             Result.Error(NetworkError.UNKNOWN)

@@ -1,6 +1,6 @@
 package repository
 
-import data.UserInfo
+import model.user.UserInfo
 import networking.UsernameClient
 import networking.createHttpClient
 import io.ktor.client.engine.cio.*

@@ -1,6 +1,6 @@
 package repository
 
-import data.SpaceData
+import model.space.SpaceData
 import model.space.Space
 import networking.SpaceClient
 import networking.createHttpClient

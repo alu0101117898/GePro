@@ -57,36 +57,52 @@ fun UserStatusDialog(
     LaunchedEffect(Unit) {
         animationProgress.value = 1f
     }
+    val overdueTasksCount = tasks.count { task ->
+        task.dueDate != null &&
+                Instant.fromEpochMilliseconds(task.dueDate)
+                    .toLocalDateTime(TimeZone.currentSystemDefault()).date < currentDate &&
+                task.status?.status != "complete"
+    }
+
+    val dueTodayTasksCount = tasks.count { task ->
+        task.dueDate != null &&
+                Instant.fromEpochMilliseconds(task.dueDate)
+                    .toLocalDateTime(TimeZone.currentSystemDefault()).date == currentDate &&
+                task.status?.status != "complete"
+    }
+
+    val todoTasksCount = tasks.count { task ->
+        task.status?.status == "to do" &&
+                !(task.dueDate != null &&
+                        (Instant.fromEpochMilliseconds(task.dueDate)
+                            .toLocalDateTime(TimeZone.currentSystemDefault()).date < currentDate ||
+                                Instant.fromEpochMilliseconds(task.dueDate)
+                                    .toLocalDateTime(TimeZone.currentSystemDefault()).date == currentDate) &&
+                        task.status.status != "complete")
+    }
+
+    val inProgressTasksCount = tasks.count { it.status?.status == "in progress" }
+    val completedTasksCount = tasks.count { it.status?.status == "complete" }
 
     val chartData = mapOf(
         "Retrasadas" to Pair(
-            tasks.count { task ->
-                task.dueDate != null &&
-                        Instant.fromEpochMilliseconds(task.dueDate)
-                            .toLocalDateTime(TimeZone.currentSystemDefault()).date < currentDate &&
-                        task.status?.status != "complete"
-            },
+            overdueTasksCount,
             Color(0xFFE57373)
         ),
         "Último día" to Pair(
-            tasks.count { task ->
-                task.dueDate != null &&
-                        Instant.fromEpochMilliseconds(task.dueDate)
-                            .toLocalDateTime(TimeZone.currentSystemDefault()).date == currentDate &&
-                        task.status?.status != "complete"
-            },
+            dueTodayTasksCount,
             Color(0xFFFFB74D)
         ),
-        "Sin empezar" to Pair(
-            tasks.count { it.status?.status == "to do" },
+        "Por hacer" to Pair(
+            todoTasksCount,
             Color(0xFFBDBDBD)
         ),
         "En progreso" to Pair(
-            tasks.count { it.status?.status == "in progress" },
+            inProgressTasksCount,
             Color(0xFF90CAF9)
         ),
         "Completadas" to Pair(
-            tasks.count { it.status?.status == "complete" },
+            completedTasksCount,
             Color(0xFFA5D6A7)
         )
     )
@@ -128,12 +144,10 @@ fun UserStatusDialog(
                     Spacer(modifier = Modifier.width(16.dp))
                     ChartLegend(chartData)
                 }
-
-                // Información adicional de rendimiento
                 Spacer(modifier = Modifier.padding(top = 8.dp))
 
                 val completionRate = if (tasks.isNotEmpty()) {
-                    (tasks.count { it.status?.status == "complete" }.toFloat() / tasks.size) * 100
+                    (completedTasksCount.toFloat() / tasks.size) * 100
                 } else {
                     0f
                 }
@@ -145,16 +159,9 @@ fun UserStatusDialog(
                     color = MaterialTheme.colors.primary
                 )
 
-                val delayedTasks = tasks.count { task ->
-                    task.dueDate != null &&
-                            Instant.fromEpochMilliseconds(task.dueDate)
-                                .toLocalDateTime(TimeZone.currentSystemDefault()).date < currentDate &&
-                            task.status?.status != "complete"
-                }
-
-                if (delayedTasks > 0) {
+                if (overdueTasksCount > 0) {
                     Text(
-                        "Tareas retrasadas: $delayedTasks",
+                        "Tareas retrasadas: $overdueTasksCount",
                         style = MaterialTheme.typography.body2,
                         color = Color(0xFFE57373),
                         modifier = Modifier.padding(top = 4.dp)
@@ -205,7 +212,7 @@ private fun AnimatedPieChart(
 private fun ChartLegend(data: Map<String, Pair<Int, Color>>) {
     Column(modifier = Modifier.padding(4.dp)) {
         data.forEach { (label, value) ->
-            if (value.first > 0) {  // Solo mostrar categorías que tengan al menos una tarea
+            if (value.first > 0) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(vertical = 4.dp)

@@ -34,14 +34,15 @@ import androidx.compose.ui.unit.sp
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import model.comment.Comment
 import util.parseColor
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CommentItem(
-    comment: data.Comment,
-    onEdit: (data.Comment) -> Unit,
-    onDelete: (data.Comment) -> Unit,
+    comment: Comment,
+    onEdit: (Comment) -> Unit,
+    onDelete: (Comment) -> Unit,
 ) {
     var hovered by remember { mutableStateOf(false) }
     val hoverModifier = Modifier.onPointerEvent(

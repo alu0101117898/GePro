@@ -1,6 +1,8 @@
 package model.user
 
-fun model.User.toTaskUser(): model.task.User {
+import model.team.User
+
+fun User.toTaskUser(): model.task.User {
     return model.task.User(
         id = this.id,
         username = this.username,

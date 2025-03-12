@@ -1,7 +1,7 @@
 package networking
 
-import data.CreateTaskData
-import data.UpdateTaskData
+import model.task.CreateTaskData
+import model.task.UpdateTaskData
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -24,8 +24,6 @@ import util.token
 class TaskFunction(private val httpClient: HttpClient) {
     suspend fun createTask(listId: String, createTaskData: CreateTaskData): Result<String, NetworkError> {
         return try {
-            println("Intentando crear tarea en ClickUp. listId: $listId")
-
             val response: HttpResponse = httpClient.post("https://api.clickup.com/api/v2/list/$listId/task") {
                 header(HttpHeaders.Authorization, token)
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
@@ -36,18 +34,16 @@ class TaskFunction(private val httpClient: HttpClient) {
                 val responseData: String = response.body()
                 Result.Success(responseData)
             } else {
-                println("Error en la respuesta de ClickUp: ${response.status}") // LOG para depurar
                 when (response.status.value) {
                     400 -> Result.Error(NetworkError.BAD_REQUEST)
-                    401 -> Result.Error(NetworkError.UNAUTHORIZED) // Token incorrecto
-                    403 -> Result.Error(NetworkError.FORBIDDEN) // Sin permisos en el equipo
-                    404 -> Result.Error(NetworkError.NOT_FOUND) // List ID incorrecto
-                    429 -> Result.Error(NetworkError.TOO_MANY_REQUESTS) // Límite de API alcanzado
+                    401 -> Result.Error(NetworkError.UNAUTHORIZED)
+                    403 -> Result.Error(NetworkError.FORBIDDEN)
+                    404 -> Result.Error(NetworkError.NOT_FOUND)
+                    429 -> Result.Error(NetworkError.TOO_MANY_REQUESTS)
                     else -> Result.Error(NetworkError.UNKNOWN)
                 }
             }
         } catch (e: Exception) {
-            println("Excepción al crear tarea: ${e.message}") // LOG para depurar
             Result.Error(NetworkError.UNKNOWN)
         }
     }

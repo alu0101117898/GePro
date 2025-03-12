@@ -72,28 +72,40 @@ fun SpaceStatusDialog(
     LaunchedEffect(Unit) {
         animationProgress.value = 1f
     }
+    val overdueTasksCount = tasks.count { task ->
+        task.dueDate != null &&
+                Instant.fromEpochMilliseconds(task.dueDate)
+                    .toLocalDateTime(TimeZone.currentSystemDefault()).date < currentDate &&
+                task.status?.status != "complete"
+    }
+
+    val dueTodayTasksCount = tasks.count { task ->
+        task.dueDate != null &&
+                Instant.fromEpochMilliseconds(task.dueDate)
+                    .toLocalDateTime(TimeZone.currentSystemDefault()).date == currentDate &&
+                task.status?.status != "complete"
+    }
+    val inProgressTasksCount = tasks.count {
+        it.status?.status == "to do" &&
+                !(it.dueDate != null &&
+                        (Instant.fromEpochMilliseconds(it.dueDate)
+                            .toLocalDateTime(TimeZone.currentSystemDefault()).date < currentDate ||
+                                Instant.fromEpochMilliseconds(it.dueDate)
+                                    .toLocalDateTime(TimeZone.currentSystemDefault()).date == currentDate) &&
+                        it.status.status != "complete")
+    }
 
     val chartData = mapOf(
         "Retrasadas" to Pair(
-            tasks.count { task ->
-                task.dueDate != null &&
-                        Instant.fromEpochMilliseconds(task.dueDate)
-                            .toLocalDateTime(TimeZone.currentSystemDefault()).date < currentDate &&
-                        task.status?.status != "complete"
-            },
+            overdueTasksCount,
             Color(0xFFE57373)
         ),
         "Último día" to Pair(
-            tasks.count { task ->
-                task.dueDate != null &&
-                        Instant.fromEpochMilliseconds(task.dueDate)
-                            .toLocalDateTime(TimeZone.currentSystemDefault()).date == currentDate &&
-                        task.status?.status != "complete"
-            },
+            dueTodayTasksCount,
             Color(0xFFFFB74D)
         ),
-        "Sin empezar" to Pair(
-            tasks.count { it.status?.status == "to do" },
+        "En proceso" to Pair(
+            inProgressTasksCount,
             Color(0xFFBDBDBD)
         ),
         "Completadas" to Pair(

@@ -17,9 +17,10 @@ import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import controller.TaskController
-import data.toTaskData
+import model.task.toTaskData
 import model.space.Space
 import model.task.Task
+import model.team.User
 import repository.TeamRepository
 import util.errorhandling.NetworkError
 import util.errorhandling.Result
@@ -39,7 +40,7 @@ fun SpaceItem(
     onLoadTasks: (Space, (Result<List<Task>, NetworkError>) -> Unit) -> Unit
 ) {
     var tasks by remember { mutableStateOf<List<Task>>(emptyList()) }
-    var teamMembers by remember { mutableStateOf<List<model.User>>(emptyList()) }
+    var teamMembers by remember { mutableStateOf<List<User>>(emptyList()) }
 
     var tasksExpanded by remember { mutableStateOf(false) }
     var taskToEdit by remember { mutableStateOf<Task?>(null) }

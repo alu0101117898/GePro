@@ -1,7 +1,7 @@
 package repository
 
-import data.CreateTaskData
-import data.UpdateTaskData
+import model.task.CreateTaskData
+import model.task.UpdateTaskData
 import networking.TaskFunction
 import networking.createHttpClient
 import io.ktor.client.engine.cio.*
@@ -61,7 +61,6 @@ object TaskRepository {
                     val tasks = tasksArray.map { taskJson ->
                         jsonConfig.decodeFromJsonElement(Task.serializer(), taskJson)
                     }
-
                     Result.Success(tasks)
                 } catch (e: Exception) {
                     e.printStackTrace()

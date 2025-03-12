@@ -1,13 +1,5 @@
 package model.space
 
-import data.SpaceData
-import data.SpaceFeatures
-import data.StatusData
-
-/**
- * Extension function to convert a Space object to a SpaceData object.
- * @return The SpaceData object.
- */
 fun Space.toSpaceData(): SpaceData {
     return SpaceData(
         name = this.name,
@@ -30,7 +22,6 @@ fun Space.toSpaceData(): SpaceData {
         ),
         statuses = listOf(
             StatusData(status = "to do", type = "open", orderindex = 0, color = "#87909e"),
-            StatusData(status = "in progress", type = "custom", orderindex = 1, color = "#5f55ee"),
             StatusData(status = "complete", type = "closed", orderindex = 2, color = "#008844")
         )
     )
