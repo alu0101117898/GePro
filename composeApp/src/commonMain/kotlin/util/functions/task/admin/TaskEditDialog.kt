@@ -65,11 +65,16 @@ fun TaskEditDialog(
 ) {
     var name by remember { mutableStateOf(task.name) }
     var description by remember { mutableStateOf(task.description ?: "") }
-    val initialDue = task.dueDate?.let { Instant.fromEpochMilliseconds(it) } ?: Clock.System.now()
-    val dueDate by remember { mutableStateOf(initialDue) }
-    var dueDateTimestamp by remember { mutableStateOf(task.dueDate) }
-    var selectedAssignee by remember { mutableStateOf(task.assignees?.firstOrNull()) }
 
+    // Estado de fecha actualizado
+    val initialDue = task.dueDate?.let { Instant.fromEpochMilliseconds(it) } ?: Clock.System.now()
+    var dueDate by remember { mutableStateOf(initialDue) }
+    var localDueDate by remember {
+        mutableStateOf(dueDate.toLocalDateTime(TimeZone.currentSystemDefault()).date)
+    }
+    var dueDateTimestamp by remember { mutableStateOf(task.dueDate) }
+
+    var selectedAssignee by remember { mutableStateOf(task.assignees?.firstOrNull()) }
     var status by remember { mutableStateOf(task.status?.status ?: "to do") }
     var showStatusDropdown by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
@@ -188,9 +193,9 @@ fun TaskEditDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val localDateTime = dueDate.toLocalDateTime(TimeZone.currentSystemDefault())
+                    // Usando localDueDate para mostrar la fecha actualizada
                     Text(
-                        text = "Fecha: ${localDateTime.dayOfMonth}/${localDateTime.monthNumber}/${localDateTime.year}",
+                        text = "Fecha: ${localDueDate.dayOfMonth}/${localDueDate.monthNumber}/${localDueDate.year}",
                         style = MaterialTheme.typography.body1
                     )
                     Text(
@@ -201,10 +206,18 @@ fun TaskEditDialog(
                 }
                 if (showDatePicker) {
                     DatePickerDialog(
-                        initialDate = dueDate.toLocalDateTime(TimeZone.currentSystemDefault()).date,
+                        initialDate = localDueDate,
                         onDateSelected = { selectedLocalDate ->
-                            val instant = selectedLocalDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+                            // Actualizamos la fecha local para mostrarla
+                            localDueDate = selectedLocalDate
+
+                            // Actualizamos el timestamp para guardar
+                            val instant = selectedLocalDate
+                                .atStartOfDayIn(TimeZone.UTC)
+                                .toEpochMilliseconds()
+
                             dueDateTimestamp = instant
+                            dueDate = Instant.fromEpochMilliseconds(instant)
                             showDatePicker = false
                         },
                         onDismiss = { showDatePicker = false }
@@ -221,13 +234,13 @@ fun TaskEditDialog(
                         dueDate = dueDateTimestamp ?: 0,
                         status = status,
                         assignees = createAssigneesUpdate(task.assignees?.firstOrNull(), selectedAssignee)
-
                     )
                     coroutineScope.launch {
                         task.id?.let { taskId ->
                             taskController.updateTask(taskId, updateTaskData) { result ->
                                 if (result is Result.Success) {
                                     onSave(result.data)
+                                    onDismiss()
                                 } else if (result is Result.Error) {
                                     println("Error al actualizar la tarea: ${result.error}")
                                 }

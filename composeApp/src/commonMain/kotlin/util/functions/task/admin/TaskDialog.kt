@@ -65,10 +65,15 @@ fun TaskDialog(
 ) {
     var name by remember { mutableStateOf(task?.name ?: "") }
     var description by remember { mutableStateOf(task?.description ?: "") }
-    val dueDate by remember {
+
+    // Estado de fecha actualizado
+    var dueDate by remember {
         mutableStateOf(
             task?.dueDate?.let { Instant.fromEpochMilliseconds(it) } ?: Clock.System.now()
         )
+    }
+    var localDueDate by remember {
+        mutableStateOf(dueDate.toLocalDateTime(TimeZone.currentSystemDefault()).date)
     }
 
     var selectedAssignee by remember { mutableStateOf(task?.assignees?.firstOrNull()) }
@@ -180,10 +185,9 @@ fun TaskDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    val localDateTime =
-                        dueDate.toLocalDateTime(TimeZone.currentSystemDefault())
+                    // Usando localDueDate para mostrar la fecha actualizada
                     Text(
-                        text = "Fecha: ${localDateTime.dayOfMonth}/${localDateTime.monthNumber}/${localDateTime.year}",
+                        text = "Fecha: ${localDueDate.dayOfMonth}/${localDueDate.monthNumber}/${localDueDate.year}",
                         style = MaterialTheme.typography.body1
                     )
                     Text(
@@ -195,13 +199,18 @@ fun TaskDialog(
 
                 if (showDatePicker) {
                     DatePickerDialog(
-                        initialDate = dueDate.toLocalDateTime(TimeZone.currentSystemDefault()).date,
+                        initialDate = localDueDate,
                         onDateSelected = { selectedLocalDate ->
+                            // Actualizamos la fecha local para mostrarla
+                            localDueDate = selectedLocalDate
+
+                            // Actualizamos el timestamp para guardar
                             val instant = selectedLocalDate
                                 .atStartOfDayIn(TimeZone.UTC)
                                 .toEpochMilliseconds()
 
                             dueDateTimestamp = instant
+                            dueDate = Instant.fromEpochMilliseconds(instant)
                             showDatePicker = false
                         },
                         onDismiss = { showDatePicker = false }

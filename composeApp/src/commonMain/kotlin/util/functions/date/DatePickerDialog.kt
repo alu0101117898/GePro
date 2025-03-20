@@ -65,7 +65,7 @@ fun DatePickerDialog(
                             currentYear--
                             currentMonth = Month.DECEMBER
                         } else {
-                            currentMonth = java.time.Month.entries.toTypedArray()[currentMonth.ordinal - 1]
+                            currentMonth = Month.of(currentMonth.value - 1)
                         }
                     }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Mes anterior")
@@ -81,7 +81,7 @@ fun DatePickerDialog(
                             currentYear++
                             currentMonth = Month.JANUARY
                         } else {
-                            currentMonth = java.time.Month.entries.toTypedArray()[currentMonth.ordinal + 1]
+                            currentMonth = Month.of(currentMonth.value + 1)
                         }
                     }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowForward, "Mes siguiente")
@@ -125,7 +125,10 @@ private fun CalendarGrid(
 ) {
     val firstDayOfMonth = LocalDate(year, month, 1)
     val daysInMonth = firstDayOfMonth.daysInMonth()
-    val startDay = (firstDayOfMonth.dayOfWeek.ordinal + 6) % 7
+
+    // Corregido: El primer día de la semana en Kotlin DayOfWeek es lunes (1), pero en nuestra grid es lunes (0)
+    // Por eso restamos 1 para obtener el índice correcto (0-6) para representar lunes-domingo
+    val startDay = firstDayOfMonth.dayOfWeek.value - 1
 
     val daysOfWeek = listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
     val daysList = (1..daysInMonth).map { day ->
@@ -137,7 +140,9 @@ private fun CalendarGrid(
             daysOfWeek.forEach { day ->
                 Text(
                     text = day,
-                    modifier = Modifier.weight(1f).padding(4.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(4.dp),
                     textAlign = TextAlign.Center
                 )
             }
@@ -146,7 +151,14 @@ private fun CalendarGrid(
             columns = GridCells.Fixed(7),
             modifier = Modifier.height(200.dp)
         ) {
-            items(startDay) { /* Espacios vacíos al inicio */ }
+            // Espacios vacíos al inicio según el día de la semana
+            items(startDay) {
+                Box(
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .padding(2.dp)
+                )
+            }
 
             items(daysList) { date ->
                 val isSelected = date == selectedDate
@@ -171,8 +183,12 @@ private fun CalendarGrid(
 
 fun LocalDate.daysInMonth(): Int {
     return when (month) {
-        Month.FEBRUARY -> if (year % 4 == 0) 29 else 28
+        Month.FEBRUARY -> if (isLeapYear(year)) 29 else 28
         Month.APRIL, Month.JUNE, Month.SEPTEMBER, Month.NOVEMBER -> 30
         else -> 31
     }
+}
+
+private fun isLeapYear(year: Int): Boolean {
+    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
 }

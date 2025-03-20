@@ -1,3 +1,3 @@
 package util
 
-const val token = "AQUÍ_TU_TOKEN_GENERADO"
+const val token = "pk_152464594_FXIX0YM863JKD5OEPTXXGZDPJKAPQGDI"
